@@ -44,43 +44,142 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="hero-gradient py-32 px-4 text-foreground relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" data-testid="hero-headline">
-            One-Click Invoice from<br />
-            <span className="text-primary">WhatsApp / Gmail / Upwork</span><br />
-            → PDF + UPI Pay
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed" data-testid="hero-subtext">
-            Stop wasting time. Auto-capture from chats, generate GST-ready invoices, 
-            and get paid instantly via UPI link or QR.
-          </p>
+      <section className="hero-gradient py-24 px-4 text-foreground relative overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Button 
-              onClick={handlePaymentClick}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl"
-              data-testid="button-reserve-spot"
-            >
-              🚀 Reserve Your Spot — ₹999 Lifetime
-            </Button>
+          {/* Problem Statement */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center bg-red-50 border border-red-200 rounded-full px-4 py-2 mb-6">
+              <Clock className="w-4 h-4 text-red-600 mr-2" />
+              <span className="text-sm text-red-700 font-medium">Freelancers waste 3+ hours per invoice</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight max-w-5xl mx-auto" data-testid="hero-headline">
+              Turn Every Chat Into an 
+              <span className="block text-primary mt-2">Invoice & Payment</span>
+              <span className="block text-2xl md:text-3xl font-normal text-muted-foreground mt-4">
+                in seconds, not hours
+              </span>
+            </h1>
           </div>
-          
-          <p className="text-sm text-muted-foreground mb-4" data-testid="text-guarantee">
-            <Clock className="inline w-4 h-4 mr-2" />
-            First 100 users only. 7-day money-back guarantee.
-          </p>
-          
-          <div className="flex justify-center items-center space-x-4 text-sm text-muted-foreground">
-            <span className="flex items-center" data-testid="feature-no-fees">
-              <Check className="w-4 h-4 mr-2" />No monthly fees
-            </span>
-            <span className="flex items-center" data-testid="feature-gst">
-              <Check className="w-4 h-4 mr-2" />GST compliant
-            </span>
-            <span className="flex items-center" data-testid="feature-setup">
-              <Check className="w-4 h-4 mr-2" />Instant setup
-            </span>
+
+          {/* Visual Problem → Solution Flow */}
+          <div className="grid lg:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
+            
+            {/* Before: Manual Process */}
+            <div className="text-center">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-4">
+                <div className="text-red-600 mb-3">
+                  <Clock className="w-8 h-8 mx-auto mb-2" />
+                  <div className="text-sm font-semibold">Current Process</div>
+                </div>
+                <div className="space-y-2 text-xs text-left">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    <span>Copy client details manually</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    <span>Open invoice software</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    <span>Create GST invoice</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    <span>Generate UPI link</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    <span>Send to client manually</span>
+                  </div>
+                </div>
+                <div className="mt-4 text-red-600 font-bold">3+ Hours Wasted</div>
+              </div>
+            </div>
+
+            {/* Arrow */}
+            <div className="flex items-center justify-center">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-3">
+                <ArrowRight className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            {/* After: InvoiceBolt */}
+            <div className="text-center">
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-4">
+                <div className="text-green-600 mb-3">
+                  <Zap className="w-8 h-8 mx-auto mb-2" />
+                  <div className="text-sm font-semibold">With InvoiceBolt</div>
+                </div>
+                <div className="space-y-2 text-xs text-left">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span>One-click capture from chat</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span>Auto-generate GST invoice</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span>Instant UPI payment ready</span>
+                  </div>
+                </div>
+                <div className="mt-4 text-green-600 font-bold">30 Seconds Done!</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced CTA */}
+          <div className="text-center">
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="hero-subtext">
+              Stop wasting hours on manual invoicing. Extract client details from any chat, 
+              generate professional GST invoices, and get paid instantly.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <Button 
+                onClick={handlePaymentClick}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-5 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl rounded-xl"
+                data-testid="button-reserve-spot"
+              >
+                🚀 Get Lifetime Access — ₹999
+              </Button>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center" data-testid="text-guarantee">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <Check className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">7-Day Guarantee</div>
+                  <div className="text-xs">Full refund if not satisfied</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center" data-testid="text-limited">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                  <Flame className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">Limited Time</div>
+                  <div className="text-xs">Only 100 lifetime spots</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center" data-testid="text-no-fees">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <Zap className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">No Monthly Fees</div>
+                  <div className="text-xs">Pay once, use forever</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
