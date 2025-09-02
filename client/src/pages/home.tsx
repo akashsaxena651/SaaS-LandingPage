@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Check, Clock, FileText, Smartphone, QrCode, MessageSquareShare, Mail, ArrowRight, Flame, Twitter, Linkedin, Send } from "lucide-react";
+import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Twitter, Linkedin, Send, Star } from "lucide-react";
+import { SiWhatsapp, SiGmail, SiUpwork } from "react-icons/si";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -43,14 +44,14 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="hero-gradient py-20 px-4 text-white relative overflow-hidden">
+      <section className="hero-gradient py-32 px-4 text-foreground relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight" data-testid="hero-headline">
             One-Click Invoice from<br />
-            <span className="text-yellow-300">MessageSquareShare / Gmail</span><br />
+            <span className="text-primary">WhatsApp / Gmail / Upwork</span><br />
             → PDF + UPI Pay
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed" data-testid="hero-subtext">
+          <p className="text-xl md:text-2xl mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed" data-testid="hero-subtext">
             Stop wasting time. Auto-capture from chats, generate GST-ready invoices, 
             and get paid instantly via UPI link or QR.
           </p>
@@ -58,19 +59,19 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
             <Button 
               onClick={handlePaymentClick}
-              className="bg-accent hover:bg-accent/90 text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl"
               data-testid="button-reserve-spot"
             >
               🚀 Reserve Your Spot — ₹999 Lifetime
             </Button>
           </div>
           
-          <p className="text-sm text-blue-200 mb-4" data-testid="text-guarantee">
+          <p className="text-sm text-muted-foreground mb-4" data-testid="text-guarantee">
             <Clock className="inline w-4 h-4 mr-2" />
             First 100 users only. 7-day money-back guarantee.
           </p>
           
-          <div className="flex justify-center items-center space-x-4 text-sm text-blue-200">
+          <div className="flex justify-center items-center space-x-4 text-sm text-muted-foreground">
             <span className="flex items-center" data-testid="feature-no-fees">
               <Check className="w-4 h-4 mr-2" />No monthly fees
             </span>
@@ -82,14 +83,31 @@ export default function Home() {
             </span>
           </div>
         </div>
-        
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+      </section>
+
+      {/* App Logos Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-sm text-muted-foreground mb-8">Seamlessly integrates with your favorite apps</p>
+          <div className="flex justify-center items-center space-x-12">
+            <div className="flex items-center space-x-2 text-muted-foreground" data-testid="logo-whatsapp">
+              <SiWhatsapp className="w-8 h-8 text-green-500" />
+              <span className="font-medium">WhatsApp</span>
+            </div>
+            <div className="flex items-center space-x-2 text-muted-foreground" data-testid="logo-gmail">
+              <SiGmail className="w-8 h-8 text-red-500" />
+              <span className="font-medium">Gmail</span>
+            </div>
+            <div className="flex items-center space-x-2 text-muted-foreground" data-testid="logo-upwork">
+              <SiUpwork className="w-8 h-8 text-green-600" />
+              <span className="font-medium">Upwork</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Demo Steps Section */}
-      <section id="demo" className="py-20 px-4">
+      <section id="demo" className="py-32 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text" data-testid="heading-how-it-works">How It Works</h2>
@@ -105,7 +123,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4" data-testid="heading-capture-chat">Capture from Chat</h3>
                 <p className="text-muted-foreground leading-relaxed" data-testid="text-capture-description">
-                  Click extension in MessageSquareShare/Gmail/Upwork → auto-fills invoice details. 
+                  Click extension in WhatsApp/Gmail/Upwork → auto-fills invoice details. 
                   No more manual typing or copy-pasting client information.
                 </p>
                 <div className="mt-6 p-4 bg-muted rounded-lg">
@@ -168,7 +186,7 @@ export default function Home() {
       </section>
 
       {/* Invoice Preview Mock */}
-      <section className="py-20 px-4 bg-muted">
+      <section className="py-32 px-4 bg-muted">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4" data-testid="heading-invoice-preview">Invoice Preview</h2>
@@ -239,7 +257,7 @@ export default function Home() {
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary" data-testid="text-total-amount">₹4,500</div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
-                <Button className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-pay-now">
+                <Button className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white" data-testid="button-pay-now">
                   Pay Now
                 </Button>
               </div>
@@ -249,7 +267,7 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4">
+      <section id="pricing" className="py-32 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 gradient-text" data-testid="heading-lifetime-deal">Lifetime Deal — ₹999</h2>
           <p className="text-xl text-muted-foreground mb-12" data-testid="text-one-time-payment">One-time payment. No monthly fees.</p>
@@ -262,7 +280,7 @@ export default function Home() {
               <ul className="text-left space-y-3 mb-8">
                 <li className="flex items-center" data-testid="feature-integration">
                   <Check className="text-green-500 mr-3 w-5 h-5" />
-                  <span>MessageSquareShare/Gmail integration</span>
+                  <span>WhatsApp/Gmail/Upwork integration</span>
                 </li>
                 <li className="flex items-center" data-testid="feature-gst-compliant">
                   <Check className="text-green-500 mr-3 w-5 h-5" />
@@ -284,7 +302,7 @@ export default function Home() {
               
               <Button 
                 onClick={handlePaymentClick}
-                className="w-full bg-gradient-to-r from-primary to-purple-600 text-white py-4 text-lg font-semibold hover:opacity-90 transition-opacity"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 text-lg font-semibold transition-colors"
                 data-testid="button-reserve-now"
               >
                 Reserve Your Spot Now
@@ -299,8 +317,29 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonial Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <Card className="bg-card rounded-2xl p-8 shadow-lg border border-border max-w-2xl mx-auto" data-testid="card-testimonial">
+            <div className="flex justify-center mb-4">
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+            </div>
+            <blockquote className="text-xl font-medium text-foreground mb-4" data-testid="text-testimonial-quote">
+              "InvoiceBolt saved me 5 hours last week! Paid lifetime deal instantly worth it."
+            </blockquote>
+            <cite className="text-muted-foreground" data-testid="text-testimonial-author">
+              — Rohit, Freelance Dev
+            </cite>
+          </Card>
+        </div>
+      </section>
+
       {/* Reserve Form */}
-      <section className="py-20 px-4 bg-muted">
+      <section className="py-32 px-4 bg-muted">
         <div className="max-w-md mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4" data-testid="heading-not-ready">Not ready to pay yet?</h2>
           <p className="text-muted-foreground mb-8" data-testid="text-reserve-spot">Reserve your spot and decide later</p>
@@ -317,7 +356,7 @@ export default function Home() {
             />
             <Button 
               type="submit"
-              className="w-full bg-primary text-primary-foreground py-3 font-semibold hover:bg-primary/90 transition-opacity"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 font-semibold transition-colors"
               data-testid="button-reserve"
             >
               Reserve My Spot
@@ -331,7 +370,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="py-12 px-4 border-t border-border">
+      <footer id="contact" className="py-16 px-4 border-t border-border">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
@@ -340,10 +379,17 @@ export default function Home() {
             </div>
             
             <div className="text-center md:text-right">
-              <p className="text-sm text-muted-foreground" data-testid="text-copyright">
+              <div className="mb-4">
+                <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
+                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-privacy">Privacy Policy</a>
+                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-refund">Refund Policy</a>
+                  <a href="mailto:support@invoicebolt.com" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-contact">Contact</a>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2" data-testid="text-copyright">
                 © 2025 InvoiceBolt · Not tax advice · Consult CA
               </p>
-              <div className="flex space-x-4 mt-2 justify-center md:justify-end">
+              <div className="flex space-x-4 justify-center md:justify-end">
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-twitter">
                   <Twitter className="w-4 h-4" />
                 </a>
