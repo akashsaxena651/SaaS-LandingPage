@@ -106,28 +106,92 @@ export default function Home() {
               </div>
             </div>
 
-            {/* After: InvoiceBolt */}
+            {/* After: InvoiceBolt Demo Flow */}
             <div className="text-center">
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-4">
-                <div className="text-green-600 mb-3">
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-2xl p-6 mb-4">
+                <div className="text-green-600 mb-4">
                   <Zap className="w-8 h-8 mx-auto mb-2" />
                   <div className="text-sm font-semibold">With InvoiceBolt</div>
                 </div>
-                <div className="space-y-2 text-xs text-left">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span>One-click capture from chat</span>
+                
+                {/* Live Demo Flow */}
+                <div className="space-y-4">
+                  
+                  {/* Step 1: App Selection */}
+                  <div className="bg-white rounded-lg p-3 border shadow-sm">
+                    <div className="text-xs text-gray-600 mb-2">Choose your app:</div>
+                    <div className="flex justify-center space-x-3">
+                      <div className="flex items-center bg-green-100 rounded-lg px-2 py-1">
+                        <SiWhatsapp className="w-4 h-4 text-green-600 mr-1" />
+                        <span className="text-xs font-medium">WhatsApp</span>
+                      </div>
+                      <div className="flex items-center bg-red-100 rounded-lg px-2 py-1">
+                        <SiGmail className="w-4 h-4 text-red-600 mr-1" />
+                        <span className="text-xs font-medium">Gmail</span>
+                      </div>
+                      <div className="flex items-center bg-green-100 rounded-lg px-2 py-1">
+                        <SiUpwork className="w-4 h-4 text-green-700 mr-1" />
+                        <span className="text-xs font-medium">Upwork</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span>Auto-generate GST invoice</span>
+
+                  {/* Arrow Down */}
+                  <div className="flex justify-center">
+                    <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
+                      <ArrowRight className="w-3 h-3 text-white rotate-90" />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span>Instant UPI payment ready</span>
+
+                  {/* Step 2: Auto-Extract */}
+                  <div className="bg-white rounded-lg p-3 border shadow-sm">
+                    <div className="text-xs text-gray-600 mb-2">Auto-extracted data:</div>
+                    <div className="text-left space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Client:</span>
+                        <span className="font-medium">Acme Corp</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Amount:</span>
+                        <span className="font-medium">₹4,500</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Service:</span>
+                        <span className="font-medium">Web Dev</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-center">
+                      <div className="inline-flex items-center bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                        <FileText className="w-3 h-3 mr-1" />
+                        Invoice Ready
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Arrow Down */}
+                  <div className="flex justify-center">
+                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                      <ArrowRight className="w-3 h-3 text-white rotate-90" />
+                    </div>
+                  </div>
+
+                  {/* Step 3: Payment Ready */}
+                  <div className="bg-white rounded-lg p-3 border shadow-sm">
+                    <div className="text-xs text-gray-600 mb-2">Payment ready:</div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <QrCode className="w-4 h-4 text-purple-600" />
+                        <span className="text-xs">UPI QR</span>
+                      </div>
+                      <div className="text-sm font-bold text-green-600">₹4,500</div>
+                    </div>
+                    <div className="mt-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-1 px-3 rounded text-xs font-medium">
+                      ✓ Sent to Client
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 text-green-600 font-bold">30 Seconds Done!</div>
+                
+                <div className="mt-4 text-green-600 font-bold">30 Seconds Total!</div>
               </div>
             </div>
           </div>
