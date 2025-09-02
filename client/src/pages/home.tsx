@@ -47,151 +47,111 @@ export default function Home() {
       <section className="hero-gradient py-24 px-4 text-foreground relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           
-          {/* Problem Statement */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center bg-red-50 border border-red-200 rounded-full px-4 py-2 mb-6">
-              <Clock className="w-4 h-4 text-red-600 mr-2" />
-              <span className="text-sm text-red-700 font-medium">Freelancers waste 3+ hours per invoice</span>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight max-w-5xl mx-auto" data-testid="hero-headline">
+          {/* Clean Hero Content */}
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight max-w-5xl mx-auto" data-testid="hero-headline">
               Turn Every Chat Into an 
               <span className="block text-primary mt-2">Invoice & Payment</span>
-              <span className="block text-2xl md:text-3xl font-normal text-muted-foreground mt-4">
-                in seconds, not hours
-              </span>
             </h1>
+            
+            <p className="text-xl md:text-2xl mb-12 text-muted-foreground max-w-3xl mx-auto leading-relaxed" data-testid="hero-subtext">
+              Auto-capture from WhatsApp, Gmail & Upwork. Generate GST invoices. Get paid instantly via UPI.
+            </p>
           </div>
 
-          {/* Visual Problem → Solution Flow */}
-          <div className="grid lg:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
-            
-            {/* Before: Manual Process */}
-            <div className="text-center">
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-4">
-                <div className="text-red-600 mb-3">
-                  <Clock className="w-8 h-8 mx-auto mb-2" />
-                  <div className="text-sm font-semibold">Current Process</div>
+          {/* Elegant Demo Flow */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-3xl p-8 shadow-2xl">
+              
+              {/* App Integration Bar */}
+              <div className="flex justify-center items-center space-x-6 mb-8">
+                <div className="flex items-center bg-green-100 rounded-xl px-4 py-3 shadow-sm">
+                  <SiWhatsapp className="w-6 h-6 text-green-600 mr-2" />
+                  <span className="font-medium text-green-700">WhatsApp</span>
                 </div>
-                <div className="space-y-2 text-xs text-left">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    <span>Copy client details manually</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    <span>Open invoice software</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    <span>Create GST invoice</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    <span>Generate UPI link</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    <span>Send to client manually</span>
-                  </div>
+                <div className="flex items-center bg-red-100 rounded-xl px-4 py-3 shadow-sm">
+                  <SiGmail className="w-6 h-6 text-red-600 mr-2" />
+                  <span className="font-medium text-red-700">Gmail</span>
                 </div>
-                <div className="mt-4 text-red-600 font-bold">3+ Hours Wasted</div>
+                <div className="flex items-center bg-green-100 rounded-xl px-4 py-3 shadow-sm">
+                  <SiUpwork className="w-6 h-6 text-green-700 mr-2" />
+                  <span className="font-medium text-green-800">Upwork</span>
+                </div>
               </div>
-            </div>
 
-            {/* Arrow */}
-            <div className="flex items-center justify-center">
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-3">
-                <ArrowRight className="w-6 h-6 text-white" />
-              </div>
-            </div>
-
-            {/* After: InvoiceBolt Demo Flow */}
-            <div className="text-center">
-              <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-2xl p-6 mb-4">
-                <div className="text-green-600 mb-4">
-                  <Zap className="w-8 h-8 mx-auto mb-2" />
-                  <div className="text-sm font-semibold">With InvoiceBolt</div>
-                </div>
+              {/* Flow Demo */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
-                {/* Live Demo Flow */}
-                <div className="space-y-4">
-                  
-                  {/* Step 1: App Selection */}
-                  <div className="bg-white rounded-lg p-3 border shadow-sm">
-                    <div className="text-xs text-gray-600 mb-2">Choose your app:</div>
-                    <div className="flex justify-center space-x-3">
-                      <div className="flex items-center bg-green-100 rounded-lg px-2 py-1">
-                        <SiWhatsapp className="w-4 h-4 text-green-600 mr-1" />
-                        <span className="text-xs font-medium">WhatsApp</span>
-                      </div>
-                      <div className="flex items-center bg-red-100 rounded-lg px-2 py-1">
-                        <SiGmail className="w-4 h-4 text-red-600 mr-1" />
-                        <span className="text-xs font-medium">Gmail</span>
-                      </div>
-                      <div className="flex items-center bg-green-100 rounded-lg px-2 py-1">
-                        <SiUpwork className="w-4 h-4 text-green-700 mr-1" />
-                        <span className="text-xs font-medium">Upwork</span>
+                {/* Chat → */}
+                <div className="text-center">
+                  <div className="bg-blue-50 rounded-2xl p-4 mb-3">
+                    <div className="text-xs text-gray-600 mb-2">Client Message</div>
+                    <div className="bg-white rounded-lg p-3 text-left text-xs shadow-sm">
+                      <p className="font-medium">"Need invoice for ₹4,500"</p>
+                      <p className="text-gray-500 mt-1">Web development work</p>
+                    </div>
+                    <div className="mt-3">
+                      <div className="inline-flex items-center bg-indigo-600 text-white px-3 py-1 rounded-full text-xs">
+                        <Zap className="w-3 h-3 mr-1" />
+                        Auto-captured
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Arrow Down */}
-                  <div className="flex justify-center">
-                    <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
-                      <ArrowRight className="w-3 h-3 text-white rotate-90" />
-                    </div>
-                  </div>
-
-                  {/* Step 2: Auto-Extract */}
-                  <div className="bg-white rounded-lg p-3 border shadow-sm">
-                    <div className="text-xs text-gray-600 mb-2">Auto-extracted data:</div>
-                    <div className="text-left space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Client:</span>
-                        <span className="font-medium">Acme Corp</span>
+                {/* → Invoice → */}
+                <div className="text-center">
+                  <div className="bg-purple-50 rounded-2xl p-4 mb-3">
+                    <div className="text-xs text-gray-600 mb-2">GST Invoice</div>
+                    <div className="bg-white rounded-lg p-3 text-xs shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-indigo-600">INVOICE</span>
+                        <span className="text-gray-500">#INV-001</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Amount:</span>
-                        <span className="font-medium">₹4,500</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Service:</span>
-                        <span className="font-medium">Web Dev</span>
+                      <div className="text-left space-y-1">
+                        <p><span className="text-gray-500">To:</span> Acme Corp</p>
+                        <p><span className="text-gray-500">Amount:</span> <span className="font-bold">₹4,500</span></p>
                       </div>
                     </div>
-                    <div className="mt-2 text-center">
-                      <div className="inline-flex items-center bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                    <div className="mt-3">
+                      <div className="inline-flex items-center bg-purple-600 text-white px-3 py-1 rounded-full text-xs">
                         <FileText className="w-3 h-3 mr-1" />
-                        Invoice Ready
+                        Generated
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Arrow Down */}
-                  <div className="flex justify-center">
-                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
-                      <ArrowRight className="w-3 h-3 text-white rotate-90" />
-                    </div>
-                  </div>
-
-                  {/* Step 3: Payment Ready */}
-                  <div className="bg-white rounded-lg p-3 border shadow-sm">
-                    <div className="text-xs text-gray-600 mb-2">Payment ready:</div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <QrCode className="w-4 h-4 text-purple-600" />
-                        <span className="text-xs">UPI QR</span>
-                      </div>
-                      <div className="text-sm font-bold text-green-600">₹4,500</div>
-                    </div>
-                    <div className="mt-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-1 px-3 rounded text-xs font-medium">
-                      ✓ Sent to Client
                     </div>
                   </div>
                 </div>
-                
-                <div className="mt-4 text-green-600 font-bold">30 Seconds Total!</div>
+
+                {/* → Payment */}
+                <div className="text-center">
+                  <div className="bg-green-50 rounded-2xl p-4 mb-3">
+                    <div className="text-xs text-gray-600 mb-2">UPI Payment</div>
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="flex justify-center mb-2">
+                        <img 
+                          src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=upi://pay?pa=demo@upi&am=4500" 
+                          alt="UPI QR" 
+                          className="border border-gray-200 rounded"
+                        />
+                      </div>
+                      <div className="text-xs font-bold text-green-600">₹4,500</div>
+                    </div>
+                    <div className="mt-3">
+                      <div className="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded-full text-xs">
+                        <Check className="w-3 h-3 mr-1" />
+                        Ready to pay
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Indicator */}
+              <div className="text-center mt-6">
+                <div className="inline-flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span className="font-semibold">Complete in 30 seconds</span>
+                </div>
               </div>
             </div>
           </div>
