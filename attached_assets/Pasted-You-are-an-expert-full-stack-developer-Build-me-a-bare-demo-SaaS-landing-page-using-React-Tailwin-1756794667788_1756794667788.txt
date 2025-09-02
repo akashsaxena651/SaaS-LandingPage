@@ -1,0 +1,60 @@
+You are an expert full-stack developer. Build me a bare demo SaaS landing page using React + Tailwind CSS. This is NOT the full product, just a clickable mock prototype to validate demand.
+
+Project name: InvoiceBolt
+Purpose: Capture early payments for an invoicing tool.
+
+⚡ Requirements:
+1. Tech stack:
+   - React (single-page app)
+   - Tailwind CSS for styling
+   - Deployable on Vercel or Replit web
+   - No backend needed for MVP, except form placeholder
+
+2. Hero Section:
+   - Big headline: “One-Click Invoice from WhatsApp / Gmail → PDF + UPI Pay”
+   - Subtext: “Stop wasting time. Auto-capture from chats, generate GST-ready invoices, and get paid instantly via UPI link or QR.”
+   - CTA button (Razorpay link): “🚀 Reserve Your Spot — ₹999 Lifetime”
+     → Use placeholder: https://rzp.io/l/your-checkout-link
+   - Add note: “First 100 users only. 7-day money-back guarantee.”
+
+3. Demo Steps Section (3 cards in a row):
+   - Step 1: “Capture from Chat — Click extension in WhatsApp/Gmail/Upwork → auto-fills invoice details.”
+   - Step 2: “Generate PDF Invoice — GST template created instantly → clean, professional invoice.”
+   - Step 3: “Get Paid via UPI — Invoice includes UPI deep link + QR → client pays in 1 tap.”
+   - Each card styled with rounded corners, hover scale animation, shadow.
+
+4. Invoice Preview Mock:
+   - Title: “Invoice Preview”
+   - Show fake invoice data: Invoice #INV-001, Client: Acme Co., Amount: ₹4,500
+   - Include a UPI QR image (use QR API: https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=demo@upi )
+   - Caption: “This is what your client sees.”
+
+5. Pricing Section:
+   - Title: “Lifetime Deal — ₹999”
+   - Subtitle: “One-time payment. No monthly fees.”
+   - CTA button linking to Razorpay checkout.
+   - Highlight urgency: “Only 100 spots available.”
+
+6. Reserve Form:
+   - Simple email field + “Reserve” button (no backend, just placeholder alert).
+   - Text above: “Not ready to pay yet? Reserve your spot.”
+
+7. Footer:
+   - Small text: “© 2025 InvoiceBolt · Not tax advice · Consult CA”
+
+8. UI/UX Styling:
+   - Use Tailwind gradient backgrounds, bold headings, clean card layouts.
+   - Rounded corners, shadows, hover effects.
+   - Centered layout, max width containers.
+   - Make it feel premium, not cheap.
+
+⚡ Deliverables:
+- A single React component file (e.g., App.jsx) with full landing page code.
+- Tailwind already configured in project (assume PostCSS setup).
+- Razorpay button opens placeholder checkout link.
+- Invoice mock with QR looks real, even though it’s static.
+- Form just alerts the email entered (simulate functionality).
+
+Do not add unnecessary features or backend code.
+Focus ONLY on this landing demo with clickable mock + payment CTA.
+
