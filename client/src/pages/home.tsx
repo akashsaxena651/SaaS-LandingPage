@@ -1,14 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Twitter, Linkedin, Send, Star } from "lucide-react";
+import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Twitter, Linkedin, Send, Star, Loader2 } from "lucide-react";
 import { SiWhatsapp, SiGmail, SiUpwork } from "react-icons/si";
 
 export default function Home() {
   const [email, setEmail] = useState("");
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const { toast } = useToast();
+
+  // Check for payment status in URL on page load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const txnId = urlParams.get('txn');
+
+    if (paymentStatus) {
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      switch (paymentStatus) {
+        case 'success':
+          toast({
+            title: "Payment Successful!",
+            description: `Your payment has been completed. Transaction ID: ${txnId}`,
+          });
+          break;
+        case 'failed':
+          toast({
+            title: "Payment Failed",
+            description: "Your payment could not be completed. Please try again.",
+            variant: "destructive",
+          });
+          break;
+        case 'error':
+          toast({
+            title: "Payment Error",
+            description: "There was an error processing your payment. Please contact support.",
+            variant: "destructive",
+          });
+          break;
+      }
+    }
+  }, [toast]);
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,8 +58,134 @@ export default function Home() {
     setEmail("");
   };
 
-  const handlePaymentClick = () => {
-    window.open("https://rzp.io/l/your-checkout-link", "_blank");
+  const handlePaymentClick = async () => {
+    setIsPaymentLoading(true);
+    
+    try {
+      // Create Razorpay order
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: 999, // ₹999 in rupees
+          description: "InvoiceBolt Lifetime Access",
+          userId: null, // Can be set if user is logged in
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.orderId) {
+        // Open Razorpay checkout
+        const options = {
+          key: result.key,
+          amount: result.amount,
+          currency: result.currency,
+          name: "InvoiceBolt",
+          description: "Lifetime Access to InvoiceBolt",
+          order_id: result.orderId,
+          handler: async function (response: any) {
+            // Payment successful, verify on server
+            try {
+              const verifyResponse = await fetch('/api/payment/verify', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  merchantTransactionId: result.merchantTransactionId
+                })
+              });
+
+              const verifyResult = await verifyResponse.json();
+
+              if (verifyResult.success) {
+                toast({
+                  title: "Payment Successful!",
+                  description: `Your payment has been completed. Transaction ID: ${response.razorpay_payment_id}`,
+                });
+              } else {
+                throw new Error("Payment verification failed");
+              }
+            } catch (error) {
+              console.error("Payment verification error:", error);
+              toast({
+                title: "Payment Error",
+                description: "Payment verification failed. Please contact support.",
+                variant: "destructive",
+              });
+            }
+          },
+          modal: {
+            ondismiss: async function() {
+              // Handle payment cancellation
+              await fetch('/api/payment/failed', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  merchantTransactionId: result.merchantTransactionId,
+                  error: "Payment cancelled by user"
+                })
+              });
+              
+              toast({
+                title: "Payment Cancelled",
+                description: "Payment was cancelled. You can try again anytime.",
+              });
+            }
+          },
+          prefill: {
+            name: "Customer",
+            email: email || "customer@example.com",
+            contact: "9999999999"
+          },
+          theme: {
+            color: "#6366f1"
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on('payment.failed', async function (response: any) {
+          // Handle payment failure
+          await fetch('/api/payment/failed', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              merchantTransactionId: result.merchantTransactionId,
+              error: response.error.description
+            })
+          });
+
+          toast({
+            title: "Payment Failed",
+            description: response.error.description || "Payment failed. Please try again.",
+            variant: "destructive",
+          });
+        });
+
+        rzp.open();
+      } else {
+        throw new Error(result.error || "Failed to create order");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment Error",
+        description: "Could not start payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPaymentLoading(false);
+    }
   };
 
   return (
@@ -166,10 +328,18 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <Button 
                 onClick={handlePaymentClick}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-5 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl rounded-xl"
+                disabled={isPaymentLoading}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-5 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl rounded-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 data-testid="button-reserve-spot"
               >
-                🚀 Get Lifetime Access — ₹999
+                {isPaymentLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "🚀 Get Lifetime Access — ₹999"
+                )}
               </Button>
             </div>
             
@@ -439,8 +609,20 @@ export default function Home() {
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary" data-testid="text-total-amount">₹4,500</div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
-                <Button className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white" data-testid="button-pay-now">
-                  Pay Now
+                <Button 
+                  onClick={handlePaymentClick}
+                  disabled={isPaymentLoading}
+                  className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-70" 
+                  data-testid="button-pay-now"
+                >
+                  {isPaymentLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Pay Now"
+                  )}
                 </Button>
               </div>
             </div>

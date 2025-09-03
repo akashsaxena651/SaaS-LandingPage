@@ -1,4 +1,4 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type Payment, type InsertPayment } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
@@ -8,13 +8,21 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Payment methods
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPayment(id: string): Promise<Payment | undefined>;
+  getPaymentByMerchantTransactionId(merchantTransactionId: string): Promise<Payment | undefined>;
+  updatePaymentStatus(merchantTransactionId: string, status: string, phonepeTransactionId?: string, paymentMethod?: string): Promise<Payment | undefined>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private payments: Map<string, Payment>;
 
   constructor() {
     this.users = new Map();
+    this.payments = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -32,6 +40,49 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  // Payment methods
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const id = randomUUID();
+    const payment: Payment = { 
+      ...insertPayment, 
+      id,
+      status: insertPayment.status || "pending",
+      phonepeTransactionId: insertPayment.phonepeTransactionId || null,
+      paymentMethod: insertPayment.paymentMethod || null,
+      userId: insertPayment.userId || null,
+      createdAt: new Date(),
+    };
+    this.payments.set(id, payment);
+    return payment;
+  }
+
+  async getPayment(id: string): Promise<Payment | undefined> {
+    return this.payments.get(id);
+  }
+
+  async getPaymentByMerchantTransactionId(merchantTransactionId: string): Promise<Payment | undefined> {
+    return Array.from(this.payments.values()).find(
+      (payment) => payment.merchantTransactionId === merchantTransactionId,
+    );
+  }
+
+  async updatePaymentStatus(
+    merchantTransactionId: string, 
+    status: string, 
+    phonepeTransactionId?: string, 
+    paymentMethod?: string
+  ): Promise<Payment | undefined> {
+    const payment = await this.getPaymentByMerchantTransactionId(merchantTransactionId);
+    if (!payment) return undefined;
+    
+    payment.status = status;
+    if (phonepeTransactionId) payment.phonepeTransactionId = phonepeTransactionId;
+    if (paymentMethod) payment.paymentMethod = paymentMethod;
+    
+    this.payments.set(payment.id, payment);
+    return payment;
   }
 }
 
