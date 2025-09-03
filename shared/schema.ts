@@ -32,6 +32,7 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 }).extend({
   amount: z.number().positive("Amount must be positive"),
   description: z.string().min(1, "Description is required"),
+  merchantTransactionId: z.string().optional(), // Optional, we generate this on the server
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

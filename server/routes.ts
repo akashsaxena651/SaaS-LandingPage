@@ -35,8 +35,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store payment in database
       const payment = await storage.createPayment({
-        ...validatedData,
         merchantTransactionId,
+        amount: validatedData.amount,
+        description: validatedData.description,
+        userId: validatedData.userId,
         status: "pending",
         phonepeTransactionId: razorpayOrder.id, // Store Razorpay order ID
       });
