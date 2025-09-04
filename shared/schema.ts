@@ -21,6 +21,13 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const leads = pgTable("leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  utms: text("utms"), // store JSON string
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -35,7 +42,16 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
   merchantTransactionId: z.string().optional(), // Optional, we generate this on the server
 });
 
+export const insertLeadSchema = createInsertSchema(leads).pick({
+  email: true,
+  utms: true,
+}).extend({
+  email: z.string().email("Invalid email"),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = typeof leads.$inferSelect;

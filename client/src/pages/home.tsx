@@ -3,16 +3,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Twitter, Linkedin, Send, Star, Loader2 } from "lucide-react";
+import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Star, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { SiWhatsapp, SiGmail, SiUpwork } from "react-icons/si";
 
 export default function Home() {
   const [email, setEmail] = useState("");
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [flowStep, setFlowStep] = useState(0);
+  const [ctaVariant] = useState<'reserve' | 'pay'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('cta');
+    const stored = sessionStorage.getItem('ib_cta_variant');
+    const chosen = (fromUrl === 'reserve' || fromUrl === 'pay')
+      ? fromUrl
+      : (stored || (Math.random() < 0.5 ? 'reserve' : 'pay'));
+    sessionStorage.setItem('ib_cta_variant', chosen);
+    return chosen as 'reserve' | 'pay';
+  });
+  const ctaTextPrimary = ctaVariant === 'reserve' ? 'Reserve Lifetime — ₹999' : 'Pay ₹999 — Get Lifetime Access';
   const { toast } = useToast();
 
   // Check for payment status in URL on page load
   useEffect(() => {
+    // Capture UTMs for analytics
+    const paramsAll = new URLSearchParams(window.location.search);
+    const utms = {
+      utm_source: paramsAll.get('utm_source') || undefined,
+      utm_medium: paramsAll.get('utm_medium') || undefined,
+      utm_campaign: paramsAll.get('utm_campaign') || undefined,
+      utm_content: paramsAll.get('utm_content') || undefined,
+      utm_term: paramsAll.get('utm_term') || undefined,
+    };
+    if (Object.values(utms).some(Boolean)) {
+      sessionStorage.setItem('ib_utms', JSON.stringify(utms));
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
     const txnId = urlParams.get('txn');
@@ -46,22 +72,48 @@ export default function Home() {
     }
   }, [toast]);
 
+  // Auto-advance hero flow: 0 = chat, 1 = invoice, 2 = upi
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFlowStep((prev) => (prev + 1) % 3);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    
-    toast({
-      title: "Spot Reserved!",
-      description: `Thank you! We've reserved your spot for ${email}. You'll be notified when InvoiceBolt launches.`,
-    });
-    
-    setEmail("");
+    (async () => {
+      try {
+        const utms = sessionStorage.getItem('ib_utms');
+        const response = await fetch('/api/leads/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, utms }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Subscription failed');
+        toast({
+          title: "Thanks — your spot is reserved",
+          description: `We sent a confirmation to ${email}.`,
+        });
+        setEmail("");
+      } catch (error) {
+        console.error('Lead subscribe error:', error);
+        toast({
+          title: "Could not subscribe",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      }
+    })();
   };
 
   const handlePaymentClick = async () => {
     setIsPaymentLoading(true);
     
     try {
+      (window as any).gtag?.('event', 'begin_checkout', { value: 999, currency: 'INR', cta_variant: ctaVariant });
       // Create Razorpay order
       const response = await fetch('/api/payment/create', {
         method: 'POST',
@@ -72,6 +124,7 @@ export default function Home() {
           amount: 999, // ₹999 in rupees
           description: "InvoiceBolt Lifetime Access",
           userId: null, // Can be set if user is logged in
+          ctaVariant,
         })
       });
 
@@ -191,16 +244,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="py-6 px-4">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Zap className="text-2xl text-primary" data-testid="logo-icon" />
-            <span className="text-xl font-bold" data-testid="logo-text">InvoiceBolt</span>
-          </div>
-          <nav className="hidden md:flex space-x-6">
+      <header className="sticky top-0 z-50 px-4 bg-background/80 backdrop-blur border-b border-border">
+        <div className="max-w-6xl mx-auto flex items-center justify-between py-4">
+          <a href="/" className="flex items-center gap-2" aria-label="InvoiceBolt Home">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-sm ring-1 ring-black/5">
+              <Zap className="w-4 h-4" data-testid="logo-icon" />
+            </span>
+            <span className="text-lg font-semibold tracking-tight" data-testid="logo-text">InvoiceBolt</span>
+          </a>
+          <nav role="navigation" aria-label="Primary" className="hidden md:flex items-center gap-6 text-sm">
             <a href="#demo" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="nav-demo">Demo</a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="nav-pricing">Pricing</a>
-            <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="nav-contact">Contact</a>
+            <a href="/contact" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="nav-contact">Contact</a>
+            <Button aria-label={ctaTextPrimary} aria-busy={isPaymentLoading} onClick={handlePaymentClick} disabled={isPaymentLoading} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
+              {isPaymentLoading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>) : ctaTextPrimary}
+            </Button>
           </nav>
         </div>
       </header>
@@ -240,30 +298,80 @@ export default function Home() {
                   <span className="font-medium text-green-800">Upwork</span>
                 </div>
               </div>
+              {/* Animated connector showing the flow (desktop) */}
+              <div className="hidden md:block mt-2">
+                <motion.svg
+                  width="100%"
+                  height="28"
+                  viewBox="0 0 100 10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {/* Base dotted line */}
+                  <line x1="16.7" y1="5" x2="83.3" y2="5" stroke="currentColor" className="text-indigo-200" strokeWidth="0.6" strokeLinecap="round" strokeDasharray="2 3" />
+                  {/* Progress line synced to flowStep */}
+                  <motion.line
+                    x1={16.7}
+                    y1={5}
+                    x2={16.7}
+                    y2={5}
+                    animate={{ x2: flowStep === 0 ? 16.7 : flowStep === 1 ? 50 : 83.3 }}
+                    stroke="currentColor"
+                    className="text-indigo-500"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    transition={{ type: 'spring', stiffness: 120, damping: 20, duration: 0.6 }}
+                  />
+                  {[16.7, 50, 83.3].map((x, i) => (
+                    <motion.circle
+                      key={x}
+                      cx={x}
+                      cy={5}
+                      r={flowStep === i ? 1.8 : 1.4}
+                      className={flowStep === i ? 'fill-indigo-600' : 'fill-indigo-400'}
+                      initial={{ opacity: 0.9, scale: 1 }}
+                      animate={{ scale: flowStep === i ? 1.2 : 1, opacity: 1 }}
+                      transition={{ duration: 0.25 }}
+                    />
+                  ))}
+                </motion.svg>
+              </div>
 
-              {/* Flow Demo */}
+              {/* Flow Demo (animated) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 
                 {/* Chat → */}
-                <div className="text-center">
-                  <div className="bg-blue-50 rounded-2xl p-4 mb-3">
+                <motion.div className="text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ delay: 0.0, duration: 0.5 }}
+                  animate={{ scale: flowStep === 0 ? 1.02 : 1, opacity: flowStep === 0 ? 1 : 0.7 }}>
+                  <div className={`bg-blue-50 rounded-2xl p-4 mb-3 border ${flowStep === 0 ? 'border-indigo-300 shadow-lg' : 'border-transparent'}`}>
                     <div className="text-xs text-gray-600 mb-2">Client Message</div>
-                    <div className="bg-white rounded-lg p-3 text-left text-xs shadow-sm">
-                      <p className="font-medium">"Need invoice for ₹4,500"</p>
-                      <p className="text-gray-500 mt-1">Web development work</p>
+                    {/* WhatsApp-like chat bubbles */}
+                    <div className="text-left text-[13px] space-y-2">
+                      <div className="inline-block max-w-[90%] bg-white rounded-2xl rounded-bl-sm px-3 py-2 shadow-sm border border-gray-200">
+                        <p>Hi! Need invoice for the website work</p>
+                        <div className="mt-1 text-[10px] text-gray-400">10:12 AM</div>
+                      </div>
+                      <div className="inline-block max-w-[90%] bg-emerald-100 rounded-2xl rounded-br-sm px-3 py-2 shadow-sm ml-6">
+                        <p>Company: Acme Corp</p>
+                        <p>Amount: ₹4,500</p>
+                        <p>Service: Web Development</p>
+                        <p>Due: Jan 30</p>
+                        <div className="mt-1 text-[10px] text-emerald-700">10:13 AM ✓✓</div>
+                      </div>
                     </div>
                     <div className="mt-3">
-                      <div className="inline-flex items-center bg-indigo-600 text-white px-3 py-1 rounded-full text-xs">
+                      <div className="inline-flex items-center bg-indigo-600 text-white px-3 py-1 rounded-full text-xs animate-pulse">
                         <Zap className="w-3 h-3 mr-1" />
                         Auto-captured
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* → Invoice → */}
-                <div className="text-center">
-                  <div className="bg-purple-50 rounded-2xl p-4 mb-3">
+                <motion.div className="text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ delay: 0.2, duration: 0.5 }}
+                  animate={{ scale: flowStep === 1 ? 1.02 : 1, opacity: flowStep === 1 ? 1 : 0.7 }}>
+                  <div className={`bg-purple-50 rounded-2xl p-4 mb-3 border ${flowStep === 1 ? 'border-purple-300 shadow-lg' : 'border-transparent'}`}>
                     <div className="text-xs text-gray-600 mb-2">GST Invoice</div>
                     <div className="bg-white rounded-lg p-3 text-xs shadow-sm">
                       <div className="flex justify-between items-center mb-2">
@@ -271,50 +379,51 @@ export default function Home() {
                         <span className="text-gray-500">#INV-001</span>
                       </div>
                       <div className="text-left space-y-1">
-                        <p><span className="text-gray-500">To:</span> Acme Corp</p>
-                        <p><span className="text-gray-500">Amount:</span> <span className="font-bold">₹4,500</span></p>
+                        <p><span className="text-gray-500">Bill To:</span> Acme Corp</p>
+                        <p><span className="text-gray-500">Service:</span> Web Development</p>
+                        <p><span className="text-gray-500">Total:</span> <span className="font-bold">₹4,500</span></p>
                       </div>
                     </div>
                     <div className="mt-3">
-                      <div className="inline-flex items-center bg-purple-600 text-white px-3 py-1 rounded-full text-xs">
+                      <div className="inline-flex items-center bg-purple-600 text-white px-3 py-1 rounded-full text-xs animate-pulse">
                         <FileText className="w-3 h-3 mr-1" />
                         Generated
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* → Payment */}
-                <div className="text-center">
-                  <div className="bg-green-50 rounded-2xl p-4 mb-3">
+                <motion.div className="text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ delay: 0.4, duration: 0.5 }}
+                  animate={{ scale: flowStep === 2 ? 1.02 : 1, opacity: flowStep === 2 ? 1 : 0.7 }}>
+                  <div className={`bg-green-50 rounded-2xl p-4 mb-3 border ${flowStep === 2 ? 'border-green-300 shadow-lg' : 'border-transparent'}`}>
                     <div className="text-xs text-gray-600 mb-2">UPI Payment</div>
                     <div className="bg-white rounded-lg p-3 shadow-sm">
                       <div className="flex justify-center mb-2">
-                        <img 
+                        <motion.img 
                           src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=upi://pay?pa=demo@upi&am=4500" 
-                          alt="UPI QR" 
+                          alt="UPI QR"
                           className="border border-gray-200 rounded"
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          whileInView={{ scale: 1, opacity: 1 }}
+                          viewport={{ once: true, amount: 0.4 }}
+                          transition={{ duration: 0.4, delay: 0.4 }}
                         />
                       </div>
                       <div className="text-xs font-bold text-green-600">₹4,500</div>
                     </div>
                     <div className="mt-3">
-                      <div className="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded-full text-xs">
+                      <div className="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded-full text-xs animate-pulse">
                         <Check className="w-3 h-3 mr-1" />
                         Ready to pay
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
 
-              {/* Time Indicator */}
-              <div className="text-center mt-6">
-                <div className="inline-flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full">
-                  <Clock className="w-4 h-4 mr-2" />
-                  <span className="font-semibold">Complete in 30 seconds</span>
-                </div>
-              </div>
+              {/* Trust row under demo */}
+              <div className="text-center mt-6 text-xs text-muted-foreground">Consulted with CA • GST compliant • UPI-ready</div>
             </div>
           </div>
 
@@ -326,21 +435,11 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <Button 
-                onClick={handlePaymentClick}
-                disabled={isPaymentLoading}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-5 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl rounded-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-                data-testid="button-reserve-spot"
-              >
-                {isPaymentLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  "🚀 Get Lifetime Access — ₹999"
-                )}
-              </Button>
+              <Button aria-label={ctaTextPrimary} aria-busy={isPaymentLoading} onClick={handlePaymentClick} disabled={isPaymentLoading} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-5 text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl rounded-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none" data-testid="button-reserve-spot">{isPaymentLoading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" />Processing...</>) : ctaTextPrimary}</Button>
+              <div className="flex items-center gap-4 text-sm" aria-label="Support options">
+                <a className="text-green-600 hover:underline" aria-label="Chat on WhatsApp for support" href="https://wa.me/918830981744" target="_blank" rel="noreferrer">WhatsApp</a>
+                <a className="text-blue-600 hover:underline" aria-label="Book onboarding call on Calendly" href="https://calendly.com/akashsaxena651/30min" target="_blank" rel="noreferrer">Book a 15-min call</a>
+              </div>
             </div>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -362,6 +461,12 @@ export default function Home() {
                   <div className="font-semibold text-foreground">Limited Time</div>
                   <div className="text-xs">Only 100 lifetime spots</div>
                 </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="text-xs">Payment secured by Razorpay</span>
               </div>
               
               <div className="flex items-center" data-testid="text-no-fees">
@@ -522,9 +627,8 @@ export default function Home() {
                     />
                   </div>
                   
-                  <div className="bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium">
-                    Pay with UPI
-                  </div>
+                  <div className="bg-indigo-600/60 text-white/80 py-2 px-4 rounded-lg text-sm font-medium select-none cursor-not-allowed">Pay with UPI</div>
+                  <div className="text-[11px] text-gray-500">Demo only — not clickable</div>
                   
                   <div className="flex items-center justify-center text-xs text-gray-500 space-x-2">
                     <Smartphone className="w-3 h-3" />
@@ -621,7 +725,7 @@ export default function Home() {
                       Processing...
                     </>
                   ) : (
-                    "Pay Now"
+                    "Pay / Reserve — ₹999"
                   )}
                 </Button>
               </div>
@@ -669,7 +773,7 @@ export default function Home() {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 text-lg font-semibold transition-colors"
                 data-testid="button-reserve-now"
               >
-                Reserve Your Spot Now
+                Pay / Reserve — ₹999
               </Button>
               
               <p className="text-sm text-red-500 mt-4 font-semibold animate-bounce" data-testid="text-limited-spots">
@@ -699,6 +803,19 @@ export default function Home() {
               — Rohit, Freelance Dev
             </cite>
           </Card>
+          {/* Additional testimonials */}
+          <div className="grid md:grid-cols-2 gap-6 mt-8">
+            <Card className="bg-card rounded-2xl p-6 shadow border border-border">
+              <div className="flex space-x-1 mb-2">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
+              <blockquote className="text-foreground">“As a CA, I like that it’s GST neat and UPI-native.”</blockquote>
+              <cite className="text-muted-foreground text-sm block mt-2">— Priya, CA</cite>
+            </Card>
+            <Card className="bg-card rounded-2xl p-6 shadow border border-border">
+              <div className="flex space-x-1 mb-2">{[...Array(5)].map((_, i) => (<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />))}</div>
+              <blockquote className="text-foreground">“Sent my invoice from a WhatsApp chat. Paid in minutes.”</blockquote>
+              <cite className="text-muted-foreground text-sm block mt-2">— Ankit, Freelancer</cite>
+            </Card>
+          </div>
         </div>
       </section>
 
@@ -745,25 +862,14 @@ export default function Home() {
             <div className="text-center md:text-right">
               <div className="mb-4">
                 <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-sm">
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-privacy">Privacy Policy</a>
-                  <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-refund">Refund Policy</a>
-                  <a href="mailto:support@invoicebolt.com" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-contact">Contact</a>
+                  <a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-privacy">Privacy Policy</a>
+                  <a href="/refund" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-refund">Refund Policy</a>
+                  <a href="/contact" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-contact">Contact</a>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mb-2" data-testid="text-copyright">
                 © 2025 InvoiceBolt · Not tax advice · Consult CA
               </p>
-              <div className="flex space-x-4 justify-center md:justify-end">
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-twitter">
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-linkedin">
-                  <Linkedin className="w-4 h-4" />
-                </a>
-                <a href="mailto:support@invoicebolt.com" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-email">
-                  <Send className="w-4 h-4" />
-                </a>
-              </div>
             </div>
           </div>
         </div>

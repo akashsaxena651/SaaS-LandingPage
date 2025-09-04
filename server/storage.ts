@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Payment, type InsertPayment } from "@shared/schema";
+import { type User, type InsertUser, type Payment, type InsertPayment, type Lead, type InsertLead } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
@@ -14,15 +14,21 @@ export interface IStorage {
   getPayment(id: string): Promise<Payment | undefined>;
   getPaymentByMerchantTransactionId(merchantTransactionId: string): Promise<Payment | undefined>;
   updatePaymentStatus(merchantTransactionId: string, status: string, phonepeTransactionId?: string, paymentMethod?: string): Promise<Payment | undefined>;
+
+  // Lead methods
+  createLead(lead: InsertLead): Promise<Lead>;
+  getLeadByEmail(email: string): Promise<Lead | undefined>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private payments: Map<string, Payment>;
+  private leads: Map<string, Lead>;
 
   constructor() {
     this.users = new Map();
     this.payments = new Map();
+    this.leads = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -83,6 +89,23 @@ export class MemStorage implements IStorage {
     
     this.payments.set(payment.id, payment);
     return payment;
+  }
+
+  // Lead methods
+  async createLead(insertLead: InsertLead): Promise<Lead> {
+    const id = randomUUID();
+    const lead: Lead = {
+      id,
+      email: insertLead.email,
+      utms: insertLead.utms ?? null,
+      createdAt: new Date(),
+    } as unknown as Lead;
+    this.leads.set(id, lead);
+    return lead;
+  }
+
+  async getLeadByEmail(email: string): Promise<Lead | undefined> {
+    return Array.from(this.leads.values()).find((lead) => lead.email === email);
   }
 }
 
