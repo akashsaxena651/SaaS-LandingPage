@@ -4,8 +4,8 @@ const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
-const FROM_EMAIL = process.env.FROM_EMAIL || "InvoiceBolt <no-reply@invoicebolt.example>";
-const REPLY_TO = process.env.REPLY_TO || process.env.FROM_EMAIL || "support@invoicebolt.example";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply.invoicebolt@gmail.com";
+const REPLY_TO = process.env.REPLY_TO || process.env.FROM_EMAIL || "noreply.invoicebolt@gmail.com";
 const APP_ORIGIN = process.env.APP_ORIGIN || "https://invoicebolt.vercel.app";
 const CHECKOUT_URL = process.env.CHECKOUT_URL || "https://invoicebolt.vercel.app";
 const WHATSAPP_LINK = process.env.WHATSAPP_LINK || "https://wa.me/918830981744";
@@ -62,7 +62,7 @@ function shell({ title, bodyHtml }: { title: string; bodyHtml: string }) {
         </div>
         ${bodyHtml}
         <div class="divider"></div>
-        <p class="footer">© InvoiceBolt · <a href="${APP_ORIGIN}">invoicebolt.example</a><br/>
+        <p class="footer">© InvoiceBolt · <a href="${APP_ORIGIN}">invoicebolt.vercel.app</a><br/>
         Not tax advice · 7‑day refund policy</p>
       </td></tr>
     </table>
