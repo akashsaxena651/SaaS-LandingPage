@@ -87,7 +87,7 @@ export async function sendReservationPaidEmail(to: string, params: { first_name?
           ${params.paid_at ? `<tr><td style="padding:8px 0">Paid at</td><td style="text-align:right">${params.paid_at}</td></tr>`: ''}
         </table>
         <div class="divider"></div>
-        <p style="margin:0 0 10px"><a class="btn btn-green" href="${WHATSAPP_LINK}" aria-label="Chat on WhatsApp">Chat on WhatsApp</a></p>
+        <p style="margin:0 0 10px"><a class="btn btn-green" href="${WHATSAPP_LINK}" role="button" aria-label="Chat on WhatsApp" style="display:inline-block;background:#25D366;color:#FFFFFF!important;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700">Chat on WhatsApp</a></p>
         <p class="muted">Or reply to this email · ${REPLY_TO} · WhatsApp: ${WHATSAPP_DISPLAY}</p>
       `,
     })
@@ -116,8 +116,8 @@ export async function sendReservationUnpaidEmail(to: string, params: { first_nam
         <h1 style="margin:16px 0 8px;font-size:22px">Thanks, ${tFirst}! Your spot is reserved</h1>
         <p class="muted" style="margin:0 0 16px">We’ll email you as soon as InvoiceBolt is live with your setup guide and early‑access details.</p>
         <p class="muted" style="margin:0 0 16px">If you intended to pay now, you can complete checkout anytime:</p>
-        <p style="margin:12px 0 8px"><a class="btn" href="${CHECKOUT_URL}" aria-label="Go to checkout">Go to Checkout</a></p>
-        <p style="margin:8px 0 0"><a class="btn btn-green" href="${WHATSAPP_LINK}" aria-label="Chat on WhatsApp">Chat on WhatsApp</a></p>
+        <p style="margin:12px 0 8px"><a class="btn" href="${CHECKOUT_URL}" role="button" aria-label="Go to checkout" style="display:inline-block;background:#7C3AED;color:#FFFFFF!important;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700">Go to Checkout</a></p>
+        <p style="margin:8px 0 0"><a class="btn btn-green" href="${WHATSAPP_LINK}" role="button" aria-label="Chat on WhatsApp" style="display:inline-block;background:#25D366;color:#FFFFFF!important;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700">Chat on WhatsApp</a></p>
         <div class="divider"></div>
         <p class="muted">Questions? Reply to this email or write to ${REPLY_TO}. WhatsApp: ${WHATSAPP_DISPLAY}. 7‑day refund after purchase. Not tax advice.</p>
       `,
