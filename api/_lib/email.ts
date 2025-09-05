@@ -6,8 +6,8 @@ const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 const FROM_EMAIL = process.env.FROM_EMAIL || "InvoiceBolt <no-reply@invoicebolt.example>";
 const REPLY_TO = process.env.REPLY_TO || process.env.FROM_EMAIL || "support@invoicebolt.example";
-const APP_ORIGIN = process.env.APP_ORIGIN || "https://invoicebolt.example";
-const CHECKOUT_URL = process.env.CHECKOUT_URL || `${APP_ORIGIN}/?startPayment=1#pricing`;
+const APP_ORIGIN = process.env.APP_ORIGIN || "https://invoicebolt.vercel.app";
+const CHECKOUT_URL = process.env.CHECKOUT_URL || "https://invoicebolt.vercel.app";
 const WHATSAPP_LINK = process.env.WHATSAPP_LINK || "https://wa.me/918830981744";
 const WHATSAPP_DISPLAY = process.env.WHATSAPP_DISPLAY || "+91 88309 81744";
 
@@ -46,8 +46,8 @@ function shell({ title, bodyHtml }: { title: string; bodyHtml: string }) {
       .muted{color:#6b7280;font-size:14px}
       .divider{height:1px;background:#e5e7eb;margin:24px 0}
       .logo{display:inline-block;height:28px;width:28px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);text-align:center;line-height:28px;color:#fff;font-weight:700}
-      .btn{display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:14px 20px;border-radius:10px}
-      .btn-green{background:#22c55e}
+      .btn{display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
+      .btn-green{background:#128C7E}
       .footer{font-size:12px;color:#6b7280}
       .pill{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:4px 10px;font-size:12px}
       a{color:#4f46e5}
