@@ -1,6 +1,6 @@
 import Razorpay from "razorpay";
 import { z } from "zod";
-import { storage } from "./_lib/storage";
+import { storage } from "./_lib/storage.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
