@@ -18,6 +18,12 @@
     { "source": "/api/payment/create", "destination": "/api/payment-create" },
     { "source": "/api/payment/verify", "destination": "/api/payment-verify" },
     { "source": "/api/leads/subscribe", "destination": "/api/leads-subscribe" },
+    { "source": "/privacy", "destination": "/index.html" },
+    { "source": "/privacy/", "destination": "/index.html" },
+    { "source": "/refund", "destination": "/index.html" },
+    { "source": "/refund/", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" },
+    { "source": "/contact/", "destination": "/index.html" },
     { "source": "/((?!api|_next|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
