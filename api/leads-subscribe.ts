@@ -11,10 +11,10 @@ export default async function handler(req: any, res: any) {
       return res.json({ success: true });
     }
 
-    const schema = z.object({ email: z.string().email(), utms: z.string().optional(), first_name: z.string().optional(), firstName: z.string().optional() });
+    const schema = z.object({ email: z.string().email(), utms: z.string().nullable().optional(), first_name: z.string().optional(), firstName: z.string().optional() });
     const parsed = schema.parse(req.body ?? {});
     const email = parsed.email;
-    const utms = parsed.utms;
+    const utms = parsed.utms ?? null;
     const firstName = parsed.firstName ?? parsed.first_name;
     const existing = await storage.getLeadByEmail(email);
     if (!existing) {
