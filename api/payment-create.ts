@@ -1,5 +1,5 @@
 import Razorpay from "razorpay";
-import { insertPaymentSchema } from "../shared/schema";
+import { z } from "zod";
 import { storage } from "../server/storage";
 
 export default async function handler(req: any, res: any) {
@@ -15,8 +15,9 @@ export default async function handler(req: any, res: any) {
 
     const priceInr = Number.parseInt(process.env.PRICE_INR || "999", 10);
     const productDescription = process.env.PRODUCT_DESCRIPTION || "InvoiceBolt Lifetime Access";
-    const data = insertPaymentSchema.parse(req.body);
-    const ctaVariant = typeof req.body?.ctaVariant === "string" ? req.body.ctaVariant : "na";
+    const bodySchema = z.object({ userId: z.string().optional(), ctaVariant: z.string().optional() });
+    const data = bodySchema.parse(req.body ?? {});
+    const ctaVariant = typeof data?.ctaVariant === "string" ? data.ctaVariant : "na";
     const merchantTransactionId = `TXN_${Date.now()}`;
 
     const razorpay = new Razorpay({ key_id, key_secret });

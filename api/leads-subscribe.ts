@@ -1,4 +1,4 @@
-import { insertLeadSchema } from "../shared/schema";
+import { z } from "zod";
 import { storage } from "../server/storage";
 import { sendReservationUnpaidEmail, emailEnabled } from "../server/email";
 
@@ -11,7 +11,11 @@ export default async function handler(req: any, res: any) {
       return res.json({ success: true });
     }
 
-    const { email, utms, firstName } = insertLeadSchema.parse({ ...req.body, firstName: req.body.firstName ?? req.body.first_name });
+    const schema = z.object({ email: z.string().email(), utms: z.string().optional(), first_name: z.string().optional(), firstName: z.string().optional() });
+    const parsed = schema.parse(req.body ?? {});
+    const email = parsed.email;
+    const utms = parsed.utms;
+    const firstName = parsed.firstName ?? parsed.first_name;
     const existing = await storage.getLeadByEmail(email);
     if (!existing) {
       await storage.createLead({ email, utms });
