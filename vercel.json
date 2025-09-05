@@ -14,11 +14,6 @@
       ]
     }
   ],
-  "functions": {
-    "api/**/*.{js,ts}": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     { "source": "/api/payment/create", "destination": "/api/payment-create" },
     { "source": "/api/payment/verify", "destination": "/api/payment-verify" },
