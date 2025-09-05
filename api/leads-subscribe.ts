@@ -1,6 +1,6 @@
-import { insertLeadSchema } from "../shared/schema.ts";
-import { storage } from "../server/storage.ts";
-import { sendReservationUnpaidEmail, emailEnabled } from "../server/email.ts";
+import { insertLeadSchema } from "../shared/schema";
+import { storage } from "../server/storage";
+import { sendReservationUnpaidEmail, emailEnabled } from "../server/email";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {

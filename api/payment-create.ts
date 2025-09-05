@@ -1,6 +1,6 @@
 import Razorpay from "razorpay";
-import { insertPaymentSchema } from "../shared/schema.ts";
-import { storage } from "../server/storage.ts";
+import { insertPaymentSchema } from "../shared/schema";
+import { storage } from "../server/storage";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
