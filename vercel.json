@@ -14,6 +14,12 @@
       ]
     }
   ],
+  "functions": {
+    "api/**/*.{js,ts}": {
+      "runtime": "nodejs20.x",
+      "regions": ["bom1"]
+    }
+  },
   "rewrites": [
     { "source": "/api/payment/create", "destination": "/api/payment-create" },
     { "source": "/api/payment/verify", "destination": "/api/payment-verify" },
