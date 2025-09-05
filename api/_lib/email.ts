@@ -4,8 +4,10 @@ const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
+// From: always the noreply address for outbound system emails
 const FROM_EMAIL = process.env.FROM_EMAIL || "noreply.invoicebolt@gmail.com";
-const REPLY_TO = process.env.REPLY_TO || process.env.FROM_EMAIL || "noreply.invoicebolt@gmail.com";
+// Reply-to / contact: help inbox
+const REPLY_TO = process.env.REPLY_TO || "help.invoicebolt@gmail.com";
 const APP_ORIGIN = process.env.APP_ORIGIN || "https://invoicebolt.vercel.app";
 const CHECKOUT_URL = process.env.CHECKOUT_URL || "https://invoicebolt.vercel.app";
 const WHATSAPP_LINK = process.env.WHATSAPP_LINK || "https://wa.me/918830981744";
