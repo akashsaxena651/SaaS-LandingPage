@@ -38,6 +38,15 @@ export default async function handler(req: any, res: any) {
       console.error("Email send error:", e);
     }
 
+    try {
+      console.log("[payment-verify] success", {
+        merchantTransactionId,
+        razorpay_order_id,
+        razorpay_payment_id,
+        mode: (process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_live_') ? 'live' : 'test',
+      });
+    } catch {}
+
     return res.json({ success: true, verified: true });
   } catch (e) {
     console.error("Verify error:", e);

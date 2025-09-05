@@ -38,6 +38,17 @@ export default async function handler(req: any, res: any) {
       phonepeTransactionId: order.id,
     });
 
+    try {
+      console.log("[payment-create] order created", {
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        merchantTransactionId,
+        keyPrefix: key_id.slice(0, 8),
+        mode: key_id.startsWith("rzp_live_") ? "live" : key_id.startsWith("rzp_test_") ? "test" : "unknown",
+      });
+    } catch {}
+
     return res.json({ success: true, orderId: order.id, amount: order.amount, currency: order.currency, merchantTransactionId, key: key_id });
   } catch (e: any) {
     console.error("Payment create error:", e);
