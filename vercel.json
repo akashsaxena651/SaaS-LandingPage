@@ -1,0 +1,25 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "no-referrer-when-downgrade" },
+        { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://checkout.razorpay.com; connect-src 'self' https://www.google-analytics.com https://*.razorpay.com; frame-src https://*.razorpay.com"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/payment/create", "destination": "/api/payment-create" },
+    { "source": "/api/payment/verify", "destination": "/api/payment-verify" },
+    { "source": "/api/leads/subscribe", "destination": "/api/leads-subscribe" },
+    { "source": "/((?!api|_next|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}
+
+
