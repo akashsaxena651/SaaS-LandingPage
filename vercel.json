@@ -16,8 +16,7 @@
   ],
   "functions": {
     "api/**/*.{js,ts}": {
-      "runtime": "nodejs20.x",
-      "regions": ["bom1"]
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
