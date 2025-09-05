@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { storage } from "../server/storage";
-import { sendReservationUnpaidEmail, emailEnabled } from "../server/email";
+import { storage } from "./_lib/storage";
+import { sendReservationUnpaidEmail, emailEnabled } from "./_lib/email";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {

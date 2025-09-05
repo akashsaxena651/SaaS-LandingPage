@@ -1,6 +1,6 @@
 import CryptoJS from "crypto-js";
-import { storage } from "../server/storage";
-import { sendReservationPaidEmail, emailEnabled } from "../server/email";
+import { storage } from "./_lib/storage";
+import { sendReservationPaidEmail, emailEnabled } from "./_lib/email";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
