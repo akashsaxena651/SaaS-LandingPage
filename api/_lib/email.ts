@@ -138,4 +138,29 @@ export async function sendReservationUnpaidEmail(to: string, params: { first_nam
   });
 }
 
+export async function sendGstTemplateEmail(to: string, params: { first_name?: string }) {
+  const tFirst = params.first_name || "there";
+  const subject = `Your GST Invoice Template — Ready to use`;
+  const htmlTemplateAttachment = `<!doctype html><html><head><meta charset=\"utf-8\"><title>GST Invoice Template</title></head><body><h1>GST INVOICE</h1><p>Replace fields and print/pdf.</p></body></html>`;
+  const csvAttachment = `Description,HSN/SAC,Qty,Rate,Taxable Value\nProfessional Services,998313,1,999,999`;
+  const bodyHtml = `
+    <h1 style=\"margin:16px 0 8px;font-size:22px\">Here’s your GST Invoice Template</h1>
+    <p class=\"muted\" style=\"margin:0 0 16px\">Hi ${tFirst}, we’ve attached a reusable HTML and CSV template. Duplicate and edit to create your invoice.</p>
+    <p style=\"margin:0 0 12px\"><a class=\"btn\" href=\"${CHECKOUT_URL}\" role=\"button\">Automate invoices from chats</a></p>
+  `;
+  const transporter = createTransport();
+  await transporter.sendMail({
+    from: FROM_EMAIL,
+    to,
+    replyTo: REPLY_TO,
+    subject,
+    html: shell({ title: subject, bodyHtml }),
+    text: `Hi ${tFirst}, your GST invoice template is attached (HTML & CSV).`,
+    attachments: [
+      { filename: 'GST-Invoice-Template.html', content: htmlTemplateAttachment, contentType: 'text/html; charset=utf-8' },
+      { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
+    ],
+  });
+}
+
 

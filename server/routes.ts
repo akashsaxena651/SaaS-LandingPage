@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { sendReservationPaidEmail, sendReservationUnpaidEmail, emailEnabled } from "./email";
+import { sendReservationPaidEmail, sendReservationUnpaidEmail, emailEnabled, sendGstTemplateEmail } from "./email";
 import { insertPaymentSchema, insertLeadSchema } from "@shared/schema";
 import Razorpay from "razorpay";
 import CryptoJS from "crypto-js";
@@ -192,6 +192,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Payment status error:", error);
       res.status(500).json({ success: false, error: "Server error" });
+    }
+  });
+
+  // Send GST template email and optionally store lead
+  app.post("/api/gst-template/send", async (req, res) => {
+    try {
+      const email: string | undefined = typeof req.body?.email === 'string' ? req.body.email : undefined;
+      const firstName: string | undefined = req.body?.first_name || req.body?.firstName;
+      const utms: string | undefined = req.body?.utms;
+      if (!email) {
+        return res.status(400).json({ success: false, error: "Email is required" });
+      }
+      const existing = await storage.getLeadByEmail(email);
+      if (!existing) {
+        await storage.createLead({ email, utms });
+      }
+      if (emailEnabled()) {
+        await sendGstTemplateEmail(email, { first_name: firstName });
+      }
+      return res.json({ success: true, emailed: emailEnabled() });
+    } catch (err: any) {
+      console.error("GST template send error:", err);
+      return res.status(500).json({ success: false, error: err?.message || "Server error" });
     }
   });
 

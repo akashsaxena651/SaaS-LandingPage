@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
       return res.json({ success: true });
     }
 
-    const schema = z.object({ email: z.string().email(), utms: z.string().nullable().optional(), first_name: z.string().optional(), firstName: z.string().optional() });
+    const schema = z.object({ email: z.string().email(), utms: z.string().nullable().optional(), first_name: z.string().optional(), firstName: z.string().optional(), send_gst_template: z.boolean().optional() });
     const parsed = schema.parse(req.body ?? {});
     const email = parsed.email;
     const utms = parsed.utms ?? null;
@@ -21,7 +21,10 @@ export default async function handler(req: any, res: any) {
       await storage.createLead({ email, utms });
     }
 
-    if (emailEnabled()) {
+    if (parsed.send_gst_template && emailEnabled()) {
+      const { sendGstTemplateEmail } = await import("./_lib/email.js");
+      await sendGstTemplateEmail(email, { first_name: firstName });
+    } else if (emailEnabled()) {
       await sendReservationUnpaidEmail(email, { first_name: firstName });
     }
 

@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, Check, Clock, FileText, Smartphone, QrCode, Mail, ArrowRight, Flame, Star, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { SiWhatsapp, SiGmail, SiUpwork } from "react-icons/si";
+import { trackBeginCheckout, trackLead, trackPurchase } from "@/lib/analytics";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -89,10 +90,11 @@ export default function Home() {
         const response = await fetch('/api/leads/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, utms }),
+          body: JSON.stringify({ email, utms, send_gst_template: true }),
         });
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.error || 'Subscription failed');
+        trackLead({ method: 'email_form', location: 'hero' });
         toast({
           title: "Thanks — your spot is reserved",
           description: `We sent a confirmation to ${email}.`,
@@ -113,7 +115,7 @@ export default function Home() {
     setIsPaymentLoading(true);
     
     try {
-      (window as any).gtag?.('event', 'begin_checkout', { value: 999, currency: 'INR', cta_variant: ctaVariant });
+      trackBeginCheckout({ value: 999, currency: 'INR', cta_variant: ctaVariant });
       // Create Razorpay order
       const response = await fetch('/api/payment/create', {
         method: 'POST',
@@ -158,6 +160,7 @@ export default function Home() {
               const verifyResult = await verifyResponse.json();
 
               if (verifyResult.success) {
+                trackPurchase({ value: 999, currency: 'INR', transaction_id: response.razorpay_payment_id });
                 toast({
                   title: "Payment Successful!",
                   description: `Your payment has been completed. Transaction ID: ${response.razorpay_payment_id}`,
@@ -267,7 +270,7 @@ export default function Home() {
       <section className="hero-gradient py-24 px-4 text-foreground relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           
-          {/* Clean Hero Content */}
+          {/* Clean Hero Content with Hero Email Capture */}
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight max-w-5xl mx-auto" data-testid="hero-headline">
               Turn Every Chat Into an 
@@ -277,6 +280,22 @@ export default function Home() {
             <p className="text-xl md:text-2xl mb-12 text-muted-foreground max-w-3xl mx-auto leading-relaxed" data-testid="hero-subtext">
               Auto-capture from WhatsApp, Gmail & Upwork. Generate GST invoices. Get paid instantly via UPI.
             </p>
+
+            {/* Above-the-fold email capture */}
+            <form className="max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3" onSubmit={handleEmailSubmit}>
+              <Input 
+                type="email"
+                placeholder="Enter your email to get the GST template"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                aria-label="Email address"
+              />
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                Get Template
+              </Button>
+            </form>
+            <div className="text-xs text-muted-foreground mt-2">Free, no spam. We’ll email a ready-to-use GST invoice template.</div>
           </div>
 
           {/* Elegant Demo Flow */}
@@ -353,7 +372,7 @@ export default function Home() {
                       </div>
                       <div className="inline-block max-w-[90%] bg-emerald-100 rounded-2xl rounded-br-sm px-3 py-2 shadow-sm ml-6">
                         <p>Company: Acme Corp</p>
-                        <p>Amount: ₹4,500</p>
+                        <p>Amount: ₹999</p>
                         <p>Service: Web Development</p>
                         <p>Due: Jan 30</p>
                         <div className="mt-1 text-[10px] text-emerald-700">10:13 AM ✓✓</div>
@@ -381,7 +400,7 @@ export default function Home() {
                       <div className="text-left space-y-1">
                         <p><span className="text-gray-500">Bill To:</span> Acme Corp</p>
                         <p><span className="text-gray-500">Service:</span> Web Development</p>
-                        <p><span className="text-gray-500">Total:</span> <span className="font-bold">₹4,500</span></p>
+                        <p><span className="text-gray-500">Total:</span> <span className="font-bold">₹999</span></p>
                       </div>
                     </div>
                     <div className="mt-3">
@@ -401,7 +420,7 @@ export default function Home() {
                     <div className="bg-white rounded-lg p-3 shadow-sm">
                       <div className="flex justify-center mb-2">
                         <motion.img 
-                          src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=upi://pay?pa=demo@upi&am=4500" 
+                          src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=upi://pay?pa=demo@upi&am=999" 
                           alt="UPI QR"
                           className="border border-gray-200 rounded"
                           initial={{ scale: 0.9, opacity: 0 }}
@@ -410,7 +429,7 @@ export default function Home() {
                           transition={{ duration: 0.4, delay: 0.4 }}
                         />
                       </div>
-                      <div className="text-xs font-bold text-green-600">₹4,500</div>
+                      <div className="text-xs font-bold text-green-600">₹999</div>
                     </div>
                     <div className="mt-3">
                       <div className="inline-flex items-center bg-green-600 text-white px-3 py-1 rounded-full text-xs animate-pulse">
@@ -427,7 +446,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Enhanced CTA */}
+          {/* Enhanced CTA (secondary payment CTA kept but below fold) */}
           <div className="text-center">
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="hero-subtext">
               Stop wasting hours on manual invoicing. Extract client details from any chat, 
@@ -541,7 +560,7 @@ export default function Home() {
                     <div className="bg-gray-100 rounded-lg p-2">
                       <div className="text-left">
                         <p>"Company: Acme Corp</p>
-                        <p>Amount: ₹4,500</p>
+                        <p>Amount: ₹999</p>
                         <p>Service: Web Development</p>
                         <p>Due: Jan 30"</p>
                       </div>
@@ -584,11 +603,11 @@ export default function Home() {
                   </div>
                   <div>
                     <div className="font-semibold">Bill To: Acme Corp</div>
-                    <div className="text-gray-500">Web Development: ₹4,500</div>
+                    <div className="text-gray-500">Web Development: ₹999</div>
                   </div>
                   <div className="border-t pt-2 flex justify-between items-center">
                     <div className="text-xs text-gray-500">Total Amount</div>
-                    <div className="font-bold text-lg">₹4,500</div>
+                    <div className="font-bold text-lg">₹999</div>
                   </div>
                 </div>
                 <div className="mt-3 text-center">
@@ -616,12 +635,12 @@ export default function Home() {
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mx-auto max-w-sm">
                 <div className="text-center space-y-3">
                   <div className="text-sm font-semibold">Pay to Your Business</div>
-                  <div className="text-2xl font-bold text-green-600">₹4,500</div>
+                  <div className="text-2xl font-bold text-green-600">₹999</div>
                   
                   {/* Mini QR Code */}
                   <div className="flex justify-center">
                     <img 
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=upi://pay?pa=demo@upi&am=4500" 
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=upi://pay?pa=demo@upi&am=999" 
                       alt="UPI QR" 
                       className="border border-gray-200 rounded"
                     />
@@ -692,7 +711,7 @@ export default function Home() {
                 <tbody>
                   <tr className="border-t border-border">
                     <td className="p-3" data-testid="text-service-description">Web Development Services</td>
-                    <td className="p-3 text-right" data-testid="text-service-amount">₹4,500</td>
+                    <td className="p-3 text-right" data-testid="text-service-amount">₹999</td>
                   </tr>
                 </tbody>
               </table>
@@ -711,7 +730,7 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground mt-2" data-testid="text-scan-to-pay">Scan to pay instantly</p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-primary" data-testid="text-total-amount">₹4,500</div>
+                <div className="text-2xl font-bold text-primary" data-testid="text-total-amount">₹999</div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
                 <Button 
                   onClick={handlePaymentClick}
