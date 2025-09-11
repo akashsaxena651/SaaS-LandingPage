@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
@@ -272,6 +273,61 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   `;
 
   const transporter = createTransport();
+  // Generate a simple polished PDF invoice template
+  async function createPdfTemplate(): Promise<Buffer> {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
+    const { width } = page.getSize();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const margin = 40;
+    const purple = rgb(0.31, 0.27, 0.90);
+
+    // Header
+    page.drawRectangle({ x: 0, y: 780, width, height: 40, color: purple, opacity: 0.9 });
+    page.drawText('GST INVOICE', { x: margin, y: 791, size: 16, font: fontBold, color: rgb(1,1,1) });
+
+    // Supplier / Recipient
+    page.drawText('Supplier (Your Business)', { x: margin, y: 740, size: 12, font: fontBold });
+    page.drawText('Your Business Name', { x: margin, y: 725, size: 11, font });
+    page.drawText('GSTIN: 22AAAAA0000A1Z5  |  PAN: ABCDE1234F', { x: margin, y: 710, size: 10, font, color: rgb(0.3,0.3,0.3) });
+
+    page.drawText('Recipient (Bill To)', { x: width/2, y: 740, size: 12, font: fontBold });
+    page.drawText('Client Company', { x: width/2, y: 725, size: 11, font });
+    page.drawText('GSTIN: 27AAAAA0000A1Z5', { x: width/2, y: 710, size: 10, font, color: rgb(0.3,0.3,0.3) });
+
+    // Meta
+    page.drawText('Invoice No.: INV-0001', { x: margin, y: 680, size: 10, font });
+    page.drawText('Invoice Date: DD/MM/YYYY', { x: margin + 180, y: 680, size: 10, font });
+    page.drawText('Place of Supply: Maharashtra', { x: margin + 380, y: 680, size: 10, font });
+
+    // Table header
+    const tableTop = 650;
+    const cols = [margin, 250, 320, 380, 440, 500];
+    const headers = ['Description', 'HSN/SAC', 'Qty', 'Rate', 'Taxable', 'Total'];
+    for (let i = 0; i < headers.length; i++) {
+      page.drawText(headers[i], { x: cols[i], y: tableTop, size: 10, font: fontBold });
+    }
+    page.drawLine({ start: { x: margin, y: tableTop - 5 }, end: { x: width - margin, y: tableTop - 5 }, thickness: 1, color: rgb(0.85,0.85,0.88)});
+
+    // Row
+    const rowY = tableTop - 22;
+    const cells = ['Professional Services', '998313', '1', '₹999.00', '₹999.00', '₹1,178.82'];
+    for (let i = 0; i < cells.length; i++) {
+      page.drawText(cells[i], { x: cols[i], y: rowY, size: 10, font });
+    }
+
+    // Totals
+    page.drawText('CGST (9%): ₹89.91', { x: width - 220, y: rowY - 30, size: 10, font });
+    page.drawText('SGST (9%): ₹89.91', { x: width - 220, y: rowY - 45, size: 10, font });
+    page.drawText('Grand Total: ₹1,178.82', { x: width - 220, y: rowY - 65, size: 12, font: fontBold });
+
+    const pdfBytes = await pdfDoc.save();
+    return Buffer.from(pdfBytes);
+  }
+
+  const pdfBuffer = await createPdfTemplate();
+
   await transporter.sendMail({
     from: FROM_EMAIL,
     to,
@@ -282,6 +338,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     attachments: [
       { filename: 'GST-Invoice-Template.doc', content: htmlTemplateAttachment, contentType: 'application/msword' },
       { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
+      { filename: 'GST-Invoice-Template.pdf', content: pdfBuffer, contentType: 'application/pdf' },
     ],
     headers: { 'List-Unsubscribe': `mailto:${process.env.UNSUBSCRIBE_EMAIL || 'unsubscribe@invoicebolt.example'}?subject=unsubscribe` },
   });
