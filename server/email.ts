@@ -47,7 +47,7 @@ function shell({ title, bodyHtml }: { title: string; bodyHtml: string }) {
       .muted{color:#6b7280;font-size:14px}
       .divider{height:1px;background:#e5e7eb;margin:24px 0}
       .logo{display:inline-block;height:28px;width:28px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);text-align:center;line-height:28px;color:#fff;font-weight:700}
-      .btn{display:inline-block;background:linear-gradient(135deg,#7C3AED,#4F46E5);color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
+      .btn{display:inline-block;background:#4F46E5;background-image:linear-gradient(135deg,#7C3AED,#4F46E5);color:#ffffff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700}
       .footer{font-size:12px;color:#6b7280}
       .pill{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:4px 10px;font-size:12px}
     </style>
@@ -242,34 +242,20 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   </body></html>`;
 
   const csvAttachment = [
-    [
-      'Description','HSN/SAC','Quantity','Rate','Discount','Taxable Value','CGST %','CGST Amount','SGST %','SGST Amount','IGST %','IGST Amount','Total'
-    ].join(','),
-    [
-      'Professional Services','998313','1','999','0','999','9','89.91','9','89.91','0','0','1178.82'
-    ].join(','),
-    [
-      'Additional Line (optional)','9983','1','0','0','0','0','0','0','0','0','0','0'
-    ].join(',')
+    ['Description','Amount'].join(','),
+    ['Web Development Services','999'].join(',')
   ].join('\n');
 
   const bodyHtml = `
     <h1 style="margin:16px 0 8px;font-size:22px">Here’s your GST Invoice Template</h1>
-    <p class="muted" style="margin:0 0 16px">Hi ${tFirst}, we’ve attached a professional, GST‑compliant invoice template (Word‑compatible) and a structured CSV you can import into Excel/Sheets. Duplicate and edit the highlighted fields to create invoices in minutes.</p>
+    <p class="muted" style="margin:0 0 16px">Hi ${tFirst}, we’ve attached two files you can use right away to create professional invoices that match the preview on our site.</p>
     <ul class="muted" style="margin:0 0 16px;padding-left:18px">
-      <li><strong>Attachment 1:</strong> GST‑Invoice‑Template.doc — open in Word/Google Docs, export to PDF</li>
-      <li><strong>Attachment 2:</strong> GST‑Line‑Items.csv — item table with GST columns, ready to import</li>
+      <li><strong>GST‑Invoice‑Template.pdf</strong> — a clean A4 template styled like our preview</li>
+      <li><strong>GST‑Line‑Items.csv</strong> — simple sheet with Description and Amount columns</li>
     </ul>
-    <p class="muted" style="margin:0 0 16px">When we go live, you’ll connect WhatsApp/Gmail and we’ll auto‑capture client details, generate GST invoices, and share payment links instantly.</p>
+    <p class="muted" style="margin:0 0 16px">When we launch, you’ll connect WhatsApp/Gmail. We’ll auto‑capture client details from chats, generate a GST invoice in this style, and share a UPI payment link instantly. You’ll also get proper numbering, tax breakdowns, and receipts.</p>
     <p style="margin:0 0 14px"><a class="btn" href="${CHECKOUT_URL}" aria-label="Automate invoices from chats">Automate invoices from chats</a></p>
-    <p style="margin:0 0 8px"><a class="btn" href="${WHATSAPP_LINK}" aria-label="Chat on WhatsApp" style="background:#25D366">Chat on WhatsApp</a></p>
-    <div class="divider"></div>
-    <div>
-      <span class="pill">Quick preview</span>
-      <div style="border:1px solid #e5e7eb;border-radius:12px;margin-top:8px;overflow:hidden">
-        ${htmlTemplateAttachment}
-      </div>
-    </div>
+    <p style="margin:0 0 8px"><a class="btn" href="${WHATSAPP_LINK}" aria-label="Chat on WhatsApp" style="background:#25D366;color:#ffffff">Chat on WhatsApp</a></p>
   `;
 
   const transporter = createTransport();
@@ -340,9 +326,8 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     replyTo: REPLY_TO,
     subject,
     html: shell({ title: subject, bodyHtml }),
-    text: `Hi ${tFirst}, your GST invoice template is attached. Open the DOC in Word/Docs, export to PDF, or import the CSV into Excel/Sheets.`,
+    text: `Hi ${tFirst}, your GST invoice template is attached (PDF + CSV). Import the CSV into Excel/Sheets and edit the PDF template or recreate it in your tool.`,
     attachments: [
-      { filename: 'GST-Invoice-Template.doc', content: htmlTemplateAttachment, contentType: 'application/msword' },
       { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
       ...(pdfBuffer ? [{ filename: 'GST-Invoice-Template.pdf', content: pdfBuffer, contentType: 'application/pdf' } as const] : []),
     ],
