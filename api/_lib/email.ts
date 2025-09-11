@@ -48,7 +48,7 @@ function shell({ title, bodyHtml }: { title: string; bodyHtml: string }) {
       .muted{color:#6b7280;font-size:14px}
       .divider{height:1px;background:#e5e7eb;margin:24px 0}
       .logo{display:inline-block;height:28px;width:28px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);text-align:center;line-height:28px;color:#fff;font-weight:700}
-      .btn{display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
+      .btn{display:inline-block;background:linear-gradient(135deg,#7C3AED,#4F46E5);color:#fff;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:600}
       .btn-green{background:#128C7E}
       .footer{font-size:12px;color:#6b7280}
       .pill{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:4px 10px;font-size:12px}
@@ -141,12 +141,131 @@ export async function sendReservationUnpaidEmail(to: string, params: { first_nam
 export async function sendGstTemplateEmail(to: string, params: { first_name?: string }) {
   const tFirst = params.first_name || "there";
   const subject = `Your GST Invoice Template — Ready to use`;
-  const htmlTemplateAttachment = `<!doctype html><html><head><meta charset=\"utf-8\"><title>GST Invoice Template</title></head><body><h1>GST INVOICE</h1><p>Replace fields and print/pdf.</p></body></html>`;
-  const csvAttachment = `Description,HSN/SAC,Qty,Rate,Taxable Value\nProfessional Services,998313,1,999,999`;
+  const htmlTemplateAttachment = `<!doctype html>
+  <html><head><meta charset=\"utf-8\"><title>GST Invoice Template</title>
+  <style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827}
+  .wrap{max-width:820px;margin:24px auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px}
+  h1{margin:0 0 12px;font-size:22px}
+  h2{margin:20px 0 8px;font-size:16px}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #e5e7eb;padding:10px;text-align:left;font-size:14px}
+  .muted{color:#6b7280}
+  .right{text-align:right}
+  .totals td{font-weight:700}
+  .note{font-size:12px;color:#6b7280;margin-top:12px}
+  .header{display:flex;justify-content:space-between;gap:16px}
+  </style></head>
+  <body>
+    <div class=\"wrap\">
+      <h1>GST INVOICE</h1>
+      <div class=\"header\">
+        <div>
+          <h2>Supplier (Your Business)</h2>
+          <div><span class=\"muted\">Name:</span> <strong>Your Business Name</strong></div>
+          <div><span class=\"muted\">Address:</span> Street, City, State, PIN</div>
+          <div><span class=\"muted\">GSTIN:</span> 22AAAAA0000A1Z5</div>
+          <div><span class=\"muted\">PAN:</span> ABCDE1234F</div>
+        </div>
+        <div>
+          <h2>Recipient (Bill To)</h2>
+          <div><span class=\"muted\">Name:</span> <strong>Client Company</strong></div>
+          <div><span class=\"muted\">Address:</span> Street, City, State, PIN</div>
+          <div><span class=\"muted\">GSTIN:</span> 27AAAAA0000A1Z5</div>
+        </div>
+      </div>
+
+      <div class=\"header\" style=\"margin-top:12px\">
+        <div><span class=\"muted\">Invoice No.</span><div><strong>INV-0001</strong></div></div>
+        <div><span class=\"muted\">Invoice Date</span><div><strong>DD/MM/YYYY</strong></div></div>
+        <div><span class=\"muted\">Place of Supply</span><div><strong>Maharashtra</strong></div></div>
+        <div><span class=\"muted\">Due Date</span><div><strong>DD/MM/YYYY</strong></div></div>
+      </div>
+
+      <h2 style=\"margin-top:16px\">Line Items</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class=\"right\">HSN/SAC</th>
+            <th class=\"right\">Qty</th>
+            <th class=\"right\">Rate</th>
+            <th class=\"right\">Discount</th>
+            <th class=\"right\">Taxable Value</th>
+            <th class=\"right\">CGST %</th>
+            <th class=\"right\">CGST Amt</th>
+            <th class=\"right\">SGST %</th>
+            <th class=\"right\">SGST Amt</th>
+            <th class=\"right\">IGST %</th>
+            <th class=\"right\">IGST Amt</th>
+            <th class=\"right\">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Professional Services</td>
+            <td class=\"right\">998313</td>
+            <td class=\"right\">1</td>
+            <td class=\"right\">₹999.00</td>
+            <td class=\"right\">₹0.00</td>
+            <td class=\"right\">₹999.00</td>
+            <td class=\"right\">9%</td>
+            <td class=\"right\">₹89.91</td>
+            <td class=\"right\">9%</td>
+            <td class=\"right\">₹89.91</td>
+            <td class=\"right\">0%</td>
+            <td class=\"right\">₹0.00</td>
+            <td class=\"right\">₹1,178.82</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style=\"display:flex;justify-content:flex-end;margin-top:12px\">
+        <table style=\"width:auto\">
+          <tbody>
+            <tr><td>Sub‑total</td><td class=\"right\">₹999.00</td></tr>
+            <tr><td>CGST (9%)</td><td class=\"right\">₹89.91</td></tr>
+            <tr><td>SGST (9%)</td><td class=\"right\">₹89.91</td></tr>
+            <tr class=\"totals\"><td>Grand Total</td><td class=\"right\">₹1,178.82</td></tr>
+            <tr><td>Amount in words</td><td class=\"right\">One Thousand One Hundred Seventy Eight and Eighty Two Paise Only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Bank / UPI Details</h2>
+      <div><span class=\"muted\">UPI ID:</span> yourname@upi</div>
+      <div><span class=\"muted\">Account:</span> Bank Name, A/C 0000 0000 0000</div>
+      <div><span class=\"muted\">IFSC:</span> BANK000000</div>
+
+      <h2>Declaration</h2>
+      <div class=\"note\">We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.</div>
+
+      <div style=\"margin-top:16px;font-size:12px\" class=\"muted\">Signature (Authorised Signatory)</div>
+    </div>
+  </body></html>`;
+
+  const csvAttachment = [
+    [
+      'Description','HSN/SAC','Quantity','Rate','Discount','Taxable Value','CGST %','CGST Amount','SGST %','SGST Amount','IGST %','IGST Amount','Total'
+    ].join(','),
+    [
+      'Professional Services','998313','1','999','0','999','9','89.91','9','89.91','0','0','1178.82'
+    ].join(','),
+    [
+      'Additional Line (optional)','9983','1','0','0','0','0','0','0','0','0','0','0'
+    ].join(',')
+  ].join('\n');
+
   const bodyHtml = `
     <h1 style=\"margin:16px 0 8px;font-size:22px\">Here’s your GST Invoice Template</h1>
-    <p class=\"muted\" style=\"margin:0 0 16px\">Hi ${tFirst}, we’ve attached a reusable HTML and CSV template. Duplicate and edit to create your invoice.</p>
-    <p style=\"margin:0 0 12px\"><a class=\"btn\" href=\"${CHECKOUT_URL}\" role=\"button\">Automate invoices from chats</a></p>
+    <p class=\"muted\" style=\"margin:0 0 16px\">Hi ${tFirst}, we’ve attached a professional, GST‑compliant invoice template (Word‑compatible) and a structured CSV you can import into Excel/Sheets. Duplicate and edit the highlighted fields to create invoices in minutes.</p>
+    <ul class=\"muted\" style=\"margin:0 0 16px;padding-left:18px\">
+      <li><strong>Attachment 1:</strong> GST‑Invoice‑Template.doc — open in Word/Google Docs, export to PDF</li>
+      <li><strong>Attachment 2:</strong> GST‑Line‑Items.csv — item table with GST columns, ready to import</li>
+    </ul>
+    <p class=\"muted\" style=\"margin:0 0 16px\">When we go live, you’ll connect WhatsApp/Gmail and we’ll auto‑capture client details, generate GST invoices, and share payment links instantly.</p>
+    <p style=\"margin:0 0 14px\"><a class=\"btn\" href=\"${CHECKOUT_URL}\" role=\"button\" aria-label=\"Automate invoices from chats\">Automate invoices from chats</a></p>
+    <p style=\"margin:0 0 8px\"><a class=\"btn\" href=\"${WHATSAPP_LINK}\" role=\"button\" aria-label=\"Chat on WhatsApp\" style=\"background:#25D366\">Chat on WhatsApp</a></p>
   `;
   const transporter = createTransport();
   await transporter.sendMail({
@@ -155,9 +274,9 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     replyTo: REPLY_TO,
     subject,
     html: shell({ title: subject, bodyHtml }),
-    text: `Hi ${tFirst}, your GST invoice template is attached (HTML & CSV).`,
+    text: `Hi ${tFirst}, your GST invoice template is attached. Open the DOC in Word/Docs, export to PDF, or import the CSV into Excel/Sheets.`,
     attachments: [
-      { filename: 'GST-Invoice-Template.html', content: htmlTemplateAttachment, contentType: 'text/html; charset=utf-8' },
+      { filename: 'GST-Invoice-Template.doc', content: htmlTemplateAttachment, contentType: 'application/msword' },
       { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
     ],
   });
