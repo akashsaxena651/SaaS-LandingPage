@@ -273,7 +273,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   `;
 
   const transporter = createTransport();
-  // Generate a simple polished PDF invoice template
+  // Generate a simple polished PDF invoice template (avoid Unicode symbols like ₹)
   async function createPdfTemplate(): Promise<Buffer> {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
@@ -312,21 +312,27 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
 
     // Row
     const rowY = tableTop - 22;
-    const cells = ['Professional Services', '998313', '1', '₹999.00', '₹999.00', '₹1,178.82'];
+    const cells = ['Professional Services', '998313', '1', 'INR 999.00', 'INR 999.00', 'INR 1,178.82'];
     for (let i = 0; i < cells.length; i++) {
       page.drawText(cells[i], { x: cols[i], y: rowY, size: 10, font });
     }
 
     // Totals
-    page.drawText('CGST (9%): ₹89.91', { x: width - 220, y: rowY - 30, size: 10, font });
-    page.drawText('SGST (9%): ₹89.91', { x: width - 220, y: rowY - 45, size: 10, font });
-    page.drawText('Grand Total: ₹1,178.82', { x: width - 220, y: rowY - 65, size: 12, font: fontBold });
+    page.drawText('CGST (9%): INR 89.91', { x: width - 220, y: rowY - 30, size: 10, font });
+    page.drawText('SGST (9%): INR 89.91', { x: width - 220, y: rowY - 45, size: 10, font });
+    page.drawText('Grand Total: INR 1,178.82', { x: width - 220, y: rowY - 65, size: 12, font: fontBold });
 
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);
   }
 
-  const pdfBuffer = await createPdfTemplate();
+  let pdfBuffer: Buffer | undefined;
+  try {
+    pdfBuffer = await createPdfTemplate();
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('PDF generation error (continuing without PDF):', e);
+  }
 
   await transporter.sendMail({
     from: FROM_EMAIL,
@@ -338,7 +344,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     attachments: [
       { filename: 'GST-Invoice-Template.doc', content: htmlTemplateAttachment, contentType: 'application/msword' },
       { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
-      { filename: 'GST-Invoice-Template.pdf', content: pdfBuffer, contentType: 'application/pdf' },
+      ...(pdfBuffer ? [{ filename: 'GST-Invoice-Template.pdf', content: pdfBuffer, contentType: 'application/pdf' } as const] : []),
     ],
     headers: { 'List-Unsubscribe': `mailto:${process.env.UNSUBSCRIBE_EMAIL || 'unsubscribe@invoicebolt.example'}?subject=unsubscribe` },
   });
