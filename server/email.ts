@@ -292,8 +292,8 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
       const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath,
-        headless: true,
+        executablePath: executablePath || undefined,
+        headless: chromium.headless,
       });
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
