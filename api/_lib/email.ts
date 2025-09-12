@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { buildInvoicePreviewHTML, type InvoicePreviewData } from "../../shared/invoiceTemplate";
 
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
@@ -269,53 +270,44 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     <p style=\"margin:0 0 8px\"><a class=\"btn\" href=\"${WHATSAPP_LINK}\" role=\"button\" aria-label=\"Chat on WhatsApp\" style=\"background:#25D366;color:#ffffff\">Chat on WhatsApp</a></p>
   `;
   async function createPdfTemplate(): Promise<Buffer> {
+    const data: InvoicePreviewData = {
+      invoiceNumber: 'INV-001',
+      businessName: 'Your Business Name',
+      businessGstin: '22AAAAA0000A1Z5',
+      clientName: 'Acme Co.',
+      clientAddressLine1: '123 Business Street',
+      clientAddressLine2: 'Mumbai, MH 400001',
+      invoiceDate: 'January 15, 2025',
+      dueDate: 'January 30, 2025',
+      itemDescription: 'Web Development Services',
+      amountInr: 'INR 999',
+      qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=demo@upi'
+    };
+    const html = buildInvoicePreviewHTML(data);
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    const { width } = page.getSize();
+    const page = pdfDoc.addPage([612, 792]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const purple = rgb(0.31, 0.27, 0.90);
-    const dark = rgb(0.11, 0.11, 0.15);
-    const muted = rgb(0.45, 0.47, 0.52);
-    const cardX = 80;
-    const cardY = 180;
-    const cardW = width - 160;
-    const cardH = 520;
-    page.drawRectangle({ x: 0, y: 780, width, height: 40, color: rgb(0.96,0.97,0.99) });
-    page.drawText('Invoice Preview', { x: 40, y: 792, size: 14, font: fontBold, color: dark });
-    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, color: rgb(1,1,1) });
-    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, borderColor: rgb(0.88,0.9,0.93), borderWidth: 1, color: rgb(1,1,1), opacity: 0 });
-    page.drawText('INVOICE', { x: cardX + 22, y: cardY + cardH - 48, size: 14, font: fontBold, color: purple });
-    page.drawText('#INV-001', { x: cardX + 22, y: cardY + cardH - 64, size: 10, font, color: muted });
-    page.drawText('Your Business Name', { x: cardX + cardW - 220, y: cardY + cardH - 48, size: 11, font: fontBold, color: dark });
-    page.drawText('GST: 22AAAAA0000A1Z5', { x: cardX + cardW - 220, y: cardY + cardH - 64, size: 9, font, color: muted });
-    page.drawLine({ start: { x: cardX, y: cardY + cardH - 88 }, end: { x: cardX + cardW, y: cardY + cardH - 88 }, thickness: 1, color: rgb(0.93,0.94,0.96)});
-    page.drawText('Bill To:', { x: cardX + 22, y: cardY + cardH - 108, size: 10, font: fontBold, color: dark });
-    page.drawText('Acme Co.', { x: cardX + 22, y: cardY + cardH - 122, size: 10, font, color: dark });
-    page.drawText('123 Business Street', { x: cardX + 22, y: cardY + cardH - 136, size: 9, font, color: muted });
-    page.drawText('Mumbai, MH 400001', { x: cardX + 22, y: cardY + cardH - 150, size: 9, font, color: muted });
-    const rightColX = cardX + cardW - 220;
-    page.drawText('Invoice Date:', { x: rightColX, y: cardY + cardH - 108, size: 10, font: fontBold, color: dark });
-    page.drawText('January 15, 2025', { x: rightColX, y: cardY + cardH - 122, size: 10, font, color: dark });
-    page.drawText('Due Date:', { x: rightColX, y: cardY + cardH - 144, size: 10, font: fontBold, color: dark });
-    page.drawText('January 30, 2025', { x: rightColX, y: cardY + cardH - 158, size: 10, font, color: dark });
-    const tableY = cardY + cardH - 208;
-    page.drawRectangle({ x: cardX + 22, y: tableY - 28, width: cardW - 44, height: 44, color: rgb(0.98,0.98,0.99), opacity: 1 });
-    page.drawText('Description', { x: cardX + 32, y: tableY, size: 10, font: fontBold, color: dark });
-    page.drawText('Amount', { x: cardX + cardW - 110, y: tableY, size: 10, font: fontBold, color: dark });
-    page.drawRectangle({ x: cardX + 22, y: tableY - 64, width: cardW - 44, height: 36, color: rgb(1,1,1), borderColor: rgb(0.93,0.94,0.96), borderWidth: 1 });
-    page.drawText('Web Development Services', { x: cardX + 32, y: tableY - 52, size: 10, font, color: dark });
-    page.drawText('INR 999', { x: cardX + cardW - 110, y: tableY - 52, size: 10, font, color: dark });
-    try {
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=demo@upi';
-      const qrResp = await fetch(qrUrl);
-      const qrBytes = await qrResp.arrayBuffer();
-      const qrImage = await pdfDoc.embedPng(qrBytes);
-      page.drawImage(qrImage, { x: cardX + 32, y: cardY + 220, width: 120, height: 120 });
-      page.drawText('Scan to pay instantly', { x: cardX + 32, y: cardY + 210, size: 8, font, color: muted });
-    } catch {}
-    page.drawText('INR 999', { x: cardX + cardW - 120, y: cardY + 260, size: 16, font: fontBold, color: purple });
-    page.drawText('Total Amount', { x: cardX + cardW - 120, y: cardY + 244, size: 9, font, color: muted });
+    page.drawText('Invoice Preview', { x: 50, y: 760, size: 14, font: fontBold });
+    page.drawText('INVOICE', { x: 90, y: 690, size: 14, font: fontBold, color: purple });
+    page.drawText('#INV-001', { x: 90, y: 675, size: 10, font });
+    page.drawText('Your Business Name', { x: 420, y: 690, size: 11, font: fontBold });
+    page.drawText('GST: 22AAAAA0000A1Z5', { x: 420, y: 675, size: 9, font });
+    page.drawText('Bill To:', { x: 90, y: 645, size: 10, font: fontBold });
+    page.drawText('Acme Co.', { x: 90, y: 632, size: 10, font });
+    page.drawText('123 Business Street', { x: 90, y: 619, size: 9, font });
+    page.drawText('Mumbai, MH 400001', { x: 90, y: 606, size: 9, font });
+    page.drawText('Invoice Date:', { x: 420, y: 645, size: 10, font: fontBold });
+    page.drawText('January 15, 2025', { x: 420, y: 632, size: 10, font });
+    page.drawText('Due Date:', { x: 420, y: 614, size: 10, font: fontBold });
+    page.drawText('January 30, 2025', { x: 420, y: 601, size: 10, font });
+    page.drawText('Description', { x: 90, y: 570, size: 10, font: fontBold });
+    page.drawText('Amount', { x: 520, y: 570, size: 10, font: fontBold });
+    page.drawText('Web Development Services', { x: 90, y: 550, size: 10, font });
+    page.drawText('INR 999', { x: 520, y: 550, size: 10, font });
+    page.drawText('INR 999', { x: 520, y: 500, size: 16, font: fontBold, color: purple });
+    page.drawText('Total Amount', { x: 520, y: 485, size: 9, font });
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);
   }
