@@ -20,11 +20,11 @@ export function buildInvoicePreviewHTML(data: InvoicePreviewData): string {
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Invoice Preview</title>
 <style>
-  :root{--bg:#f7f8fb;--card:#ffffff;--muted:#6b7280;--border:#e5e7eb;--purple:#4f46e5;--purple2:#7c3aed;--text:#0f172a}
-  body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text)}
+  :root{--brand:#6B46C1;--muted:#6b7280;--bg:#ffffff;--panel:#f8fafc;--border:#e6e7eb;--text:#111827}
+  body{margin:0;background:#f3f4f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--text)}
   .wrap{padding:48px}
   .header{background:#eef2ff;padding:10px 16px;border-bottom:1px solid #e5e7eb;color:#0f172a;font-weight:700}
-  .card{width:700px;margin:28px auto;background:var(--card);border:1px solid var(--border);border-radius:12px}
+  .card{width:700px;margin:28px auto;background:var(--bg);border:1px solid var(--border);border-radius:12px}
   .row{display:flex;justify-content:space-between;gap:16px}
   .px{padding-left:20px;padding-right:20px}
   .py{padding-top:20px;padding-bottom:20px}

@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import { buildInvoicePreviewHTML, type InvoicePreviewData } from "../shared/invoiceTemplate";
 import * as path from "path";
 import * as fs from "fs";
@@ -269,7 +271,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   `;
 
   const transporter = createTransport();
-  // Generate PDF by rasterizing our shared HTML template into a PDF page using pdf-lib
+  // Generate PDF via headless Chromium for pixel-perfect HTML→PDF. Falls back to pdf-lib if Chromium unavailable.
   async function createPdfTemplate(): Promise<Buffer> {
     const data: InvoicePreviewData = {
       invoiceNumber: 'INV-001',
@@ -285,36 +287,31 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
       qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=demo@upi'
     };
     const html = buildInvoicePreviewHTML(data);
-    // Write to a temporary HTML file and embed as an image substitute using PNG from a headless renderer later if needed
-    // For now, we include the HTML as an attachment fallback if PDF generation fails
-    // We still create a simple PDF cover that looks similar using pdf-lib text primitives
-
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([612, 792]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const purple = rgb(0.31, 0.27, 0.90);
-    page.drawText('Invoice Preview', { x: 50, y: 760, size: 14, font: fontBold });
-    page.drawText('INVOICE', { x: 90, y: 690, size: 14, font: fontBold, color: purple });
-    page.drawText('#INV-001', { x: 90, y: 675, size: 10, font });
-    page.drawText('Your Business Name', { x: 420, y: 690, size: 11, font: fontBold });
-    page.drawText('GST: 22AAAAA0000A1Z5', { x: 420, y: 675, size: 9, font });
-    page.drawText('Bill To:', { x: 90, y: 645, size: 10, font: fontBold });
-    page.drawText('Acme Co.', { x: 90, y: 632, size: 10, font });
-    page.drawText('123 Business Street', { x: 90, y: 619, size: 9, font });
-    page.drawText('Mumbai, MH 400001', { x: 90, y: 606, size: 9, font });
-    page.drawText('Invoice Date:', { x: 420, y: 645, size: 10, font: fontBold });
-    page.drawText('January 15, 2025', { x: 420, y: 632, size: 10, font });
-    page.drawText('Due Date:', { x: 420, y: 614, size: 10, font: fontBold });
-    page.drawText('January 30, 2025', { x: 420, y: 601, size: 10, font });
-    page.drawText('Description', { x: 90, y: 570, size: 10, font: fontBold });
-    page.drawText('Amount', { x: 520, y: 570, size: 10, font: fontBold });
-    page.drawText('Web Development Services', { x: 90, y: 550, size: 10, font });
-    page.drawText('INR 999', { x: 520, y: 550, size: 10, font });
-    page.drawText('INR 999', { x: 520, y: 500, size: 16, font: fontBold, color: purple });
-    page.drawText('Total Amount', { x: 520, y: 485, size: 9, font });
-    const pdfBytes = await pdfDoc.save();
-    return Buffer.from(pdfBytes);
+    try {
+      const executablePath = await chromium.executablePath();
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath,
+        headless: true,
+      });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' } });
+      await browser.close();
+      return Buffer.from(pdfBuffer);
+    } catch (e) {
+      // Fallback to simple pdf-lib rendering
+      const pdfDoc = await PDFDocument.create();
+      const pdfPage = pdfDoc.addPage([612, 792]);
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const purple = rgb(0.31, 0.27, 0.90);
+      pdfPage.drawText('INVOICE', { x: 60, y: 720, size: 16, font: fontBold, color: purple });
+      pdfPage.drawText('INR 999', { x: 520, y: 120, size: 16, font: fontBold, color: purple });
+      const bytes = await pdfDoc.save();
+      return Buffer.from(bytes);
+    }
   }
 
   let pdfBuffer: Buffer | undefined;
