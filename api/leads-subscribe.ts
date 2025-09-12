@@ -34,8 +34,14 @@ export default async function handler(req: any, res: any) {
 
     return res.json({ success: true });
   } catch (err: any) {
-    console.error("Lead subscribe error:", err);
-    return res.status(400).json({ success: false, error: err?.message || "Invalid payload" });
+    try {
+      console.error("Lead subscribe error:", err);
+      return res.status(400).json({ success: false, error: err?.message || "Invalid payload" });
+    } catch {
+      // last resort: ensure JSON
+      res.setHeader('Content-Type', 'application/json');
+      res.status(400).end(JSON.stringify({ success: false, error: 'Invalid payload' }));
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { buildInvoicePreviewHTML, type InvoicePreviewData } from "../../shared/invoiceTemplate";
+// keep PDF rendering self-contained for serverless bundle
 
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
@@ -270,20 +270,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     <p style=\"margin:0 0 8px\"><a class=\"btn\" href=\"${WHATSAPP_LINK}\" role=\"button\" aria-label=\"Chat on WhatsApp\" style=\"background:#25D366;color:#ffffff\">Chat on WhatsApp</a></p>
   `;
   async function createPdfTemplate(): Promise<Buffer> {
-    const data: InvoicePreviewData = {
-      invoiceNumber: 'INV-001',
-      businessName: 'Your Business Name',
-      businessGstin: '22AAAAA0000A1Z5',
-      clientName: 'Acme Co.',
-      clientAddressLine1: '123 Business Street',
-      clientAddressLine2: 'Mumbai, MH 400001',
-      invoiceDate: 'January 15, 2025',
-      dueDate: 'January 30, 2025',
-      itemDescription: 'Web Development Services',
-      amountInr: 'INR 999',
-      qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=demo@upi'
-    };
-    const html = buildInvoicePreviewHTML(data);
+    // data values inlined to avoid cross-bundle imports
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([612, 792]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
