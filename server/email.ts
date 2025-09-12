@@ -242,16 +242,23 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   </body></html>`;
 
   const csvAttachment = [
-    ['Description','Amount'].join(','),
-    ['Web Development Services','999'].join(',')
+    [
+      'Description','HSN/SAC','Quantity','Rate','Discount','Taxable Value',
+      'CGST %','CGST Amount','SGST %','SGST Amount','IGST %','IGST Amount','Total',
+      'Place of Supply','Invoice No','Invoice Date','Due Date','Buyer GSTIN','Seller GSTIN'
+    ].join(','),
+    [
+      'Professional Services','998313','1','999','0','999','9','89.91','9','89.91','0','0','1178.82',
+      'Maharashtra','INV-0001','2025-01-15','2025-01-30','27AAAAA0000A1Z5','22AAAAA0000A1Z5'
+    ].join(',')
   ].join('\n');
 
   const bodyHtml = `
     <h1 style="margin:16px 0 8px;font-size:22px">Here’s your GST Invoice Template</h1>
     <p class="muted" style="margin:0 0 16px">Hi ${tFirst}, we’ve attached two files you can use right away to create professional invoices that match the preview on our site.</p>
     <ul class="muted" style="margin:0 0 16px;padding-left:18px">
-      <li><strong>GST‑Invoice‑Template.pdf</strong> — a clean A4 template styled like our preview</li>
-      <li><strong>GST‑Line‑Items.csv</strong> — simple sheet with Description and Amount columns</li>
+      <li><strong>GST‑Invoice‑Template.pdf</strong> — clean A4 template styled like our preview</li>
+      <li><strong>GST‑Line‑Items.csv</strong> — professional columns: HSN/SAC, Qty, Rate, taxes, totals, GSTINs</li>
     </ul>
     <p class="muted" style="margin:0 0 16px">When we launch, you’ll connect WhatsApp/Gmail. We’ll auto‑capture client details from chats, generate a GST invoice in this style, and share a UPI payment link instantly. You’ll also get proper numbering, tax breakdowns, and receipts.</p>
     <p style="margin:0 0 14px"><a class="btn" href="${CHECKOUT_URL}" aria-label="Automate invoices from chats">Automate invoices from chats</a></p>
@@ -259,54 +266,77 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   `;
 
   const transporter = createTransport();
-  // Generate a simple polished PDF invoice template (avoid Unicode symbols like ₹)
+  // Generate a PDF resembling the landing page invoice preview (avoid Unicode symbols like ₹)
   async function createPdfTemplate(): Promise<Buffer> {
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4
     const { width } = page.getSize();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const margin = 40;
     const purple = rgb(0.31, 0.27, 0.90);
+    const dark = rgb(0.11, 0.11, 0.15);
+    const muted = rgb(0.45, 0.47, 0.52);
 
-    // Header
-    page.drawRectangle({ x: 0, y: 780, width, height: 40, color: purple, opacity: 0.9 });
-    page.drawText('GST INVOICE', { x: margin, y: 791, size: 16, font: fontBold, color: rgb(1,1,1) });
+    // Card container centered
+    const cardX = 80;
+    const cardY = 180;
+    const cardW = width - 160;
+    const cardH = 520;
 
-    // Supplier / Recipient
-    page.drawText('Supplier (Your Business)', { x: margin, y: 740, size: 12, font: fontBold });
-    page.drawText('Your Business Name', { x: margin, y: 725, size: 11, font });
-    page.drawText('GSTIN: 22AAAAA0000A1Z5  |  PAN: ABCDE1234F', { x: margin, y: 710, size: 10, font, color: rgb(0.3,0.3,0.3) });
+    // Header bar like preview
+    page.drawRectangle({ x: 0, y: 780, width, height: 40, color: rgb(0.96,0.97,0.99) });
+    page.drawText('Invoice Preview', { x: 40, y: 792, size: 14, font: fontBold, color: dark });
 
-    page.drawText('Recipient (Bill To)', { x: width/2, y: 740, size: 12, font: fontBold });
-    page.drawText('Client Company', { x: width/2, y: 725, size: 11, font });
-    page.drawText('GSTIN: 27AAAAA0000A1Z5', { x: width/2, y: 710, size: 10, font, color: rgb(0.3,0.3,0.3) });
+    // Card background
+    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, color: rgb(1,1,1) });
+    // Border
+    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, borderColor: rgb(0.88,0.9,0.93), borderWidth: 1, color: rgb(1,1,1), opacity: 0 });
 
-    // Meta
-    page.drawText('Invoice No.: INV-0001', { x: margin, y: 680, size: 10, font });
-    page.drawText('Invoice Date: DD/MM/YYYY', { x: margin + 180, y: 680, size: 10, font });
-    page.drawText('Place of Supply: Maharashtra', { x: margin + 380, y: 680, size: 10, font });
+    // Card header row
+    page.drawText('INVOICE', { x: cardX + 22, y: cardY + cardH - 48, size: 14, font: fontBold, color: purple });
+    page.drawText('#INV-001', { x: cardX + 22, y: cardY + cardH - 64, size: 10, font, color: muted });
+    page.drawText('Your Business Name', { x: cardX + cardW - 220, y: cardY + cardH - 48, size: 11, font: fontBold, color: dark });
+    page.drawText('GST: 22AAAAA0000A1Z5', { x: cardX + cardW - 220, y: cardY + cardH - 64, size: 9, font, color: muted });
 
-    // Table header
-    const tableTop = 650;
-    const cols = [margin, 250, 320, 380, 440, 500];
-    const headers = ['Description', 'HSN/SAC', 'Qty', 'Rate', 'Taxable', 'Total'];
-    for (let i = 0; i < headers.length; i++) {
-      page.drawText(headers[i], { x: cols[i], y: tableTop, size: 10, font: fontBold });
-    }
-    page.drawLine({ start: { x: margin, y: tableTop - 5 }, end: { x: width - margin, y: tableTop - 5 }, thickness: 1, color: rgb(0.85,0.85,0.88)});
+    // Divider
+    page.drawLine({ start: { x: cardX, y: cardY + cardH - 88 }, end: { x: cardX + cardW, y: cardY + cardH - 88 }, thickness: 1, color: rgb(0.93,0.94,0.96)});
 
+    // Two columns: Bill To and Dates
+    page.drawText('Bill To:', { x: cardX + 22, y: cardY + cardH - 108, size: 10, font: fontBold, color: dark });
+    page.drawText('Acme Co.', { x: cardX + 22, y: cardY + cardH - 122, size: 10, font, color: dark });
+    page.drawText('123 Business Street', { x: cardX + 22, y: cardY + cardH - 136, size: 9, font, color: muted });
+    page.drawText('Mumbai, MH 400001', { x: cardX + 22, y: cardY + cardH - 150, size: 9, font, color: muted });
+
+    const rightColX = cardX + cardW - 220;
+    page.drawText('Invoice Date:', { x: rightColX, y: cardY + cardH - 108, size: 10, font: fontBold, color: dark });
+    page.drawText('January 15, 2025', { x: rightColX, y: cardY + cardH - 122, size: 10, font, color: dark });
+    page.drawText('Due Date:', { x: rightColX, y: cardY + cardH - 144, size: 10, font: fontBold, color: dark });
+    page.drawText('January 30, 2025', { x: rightColX, y: cardY + cardH - 158, size: 10, font, color: dark });
+
+    // Items table (Description / Amount)
+    const tableY = cardY + cardH - 208;
+    page.drawRectangle({ x: cardX + 22, y: tableY - 28, width: cardW - 44, height: 44, color: rgb(0.98,0.98,0.99), opacity: 1 });
+    page.drawText('Description', { x: cardX + 32, y: tableY, size: 10, font: fontBold, color: dark });
+    page.drawText('Amount', { x: cardX + cardW - 110, y: tableY, size: 10, font: fontBold, color: dark });
     // Row
-    const rowY = tableTop - 22;
-    const cells = ['Professional Services', '998313', '1', 'INR 999.00', 'INR 999.00', 'INR 1,178.82'];
-    for (let i = 0; i < cells.length; i++) {
-      page.drawText(cells[i], { x: cols[i], y: rowY, size: 10, font });
-    }
+    page.drawRectangle({ x: cardX + 22, y: tableY - 64, width: cardW - 44, height: 36, color: rgb(1,1,1), borderColor: rgb(0.93,0.94,0.96), borderWidth: 1 });
+    page.drawText('Web Development Services', { x: cardX + 32, y: tableY - 52, size: 10, font, color: dark });
+    page.drawText('INR 999', { x: cardX + cardW - 110, y: tableY - 52, size: 10, font, color: dark });
 
-    // Totals
-    page.drawText('CGST (9%): INR 89.91', { x: width - 220, y: rowY - 30, size: 10, font });
-    page.drawText('SGST (9%): INR 89.91', { x: width - 220, y: rowY - 45, size: 10, font });
-    page.drawText('Grand Total: INR 1,178.82', { x: width - 220, y: rowY - 65, size: 12, font: fontBold });
+    // QR + Total area
+    // Fetch a QR code png for upi
+    try {
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=demo@upi';
+      const qrResp = await fetch(qrUrl);
+      const qrBytes = await qrResp.arrayBuffer();
+      const qrImage = await pdfDoc.embedPng(qrBytes);
+      page.drawImage(qrImage, { x: cardX + 32, y: cardY + 220, width: 120, height: 120 });
+      page.drawText('Scan to pay instantly', { x: cardX + 32, y: cardY + 210, size: 8, font, color: muted });
+    } catch {}
+
+    // Total on right
+    page.drawText('INR 999', { x: cardX + cardW - 120, y: cardY + 260, size: 16, font: fontBold, color: purple });
+    page.drawText('Total Amount', { x: cardX + cardW - 120, y: cardY + 244, size: 9, font, color: muted });
 
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);
