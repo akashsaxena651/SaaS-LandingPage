@@ -21,11 +21,15 @@ export default async function handler(req: any, res: any) {
       await storage.createLead({ email, utms });
     }
 
-    if (parsed.send_gst_template && emailEnabled()) {
-      const { sendGstTemplateEmail } = await import("./_lib/email.js");
-      await sendGstTemplateEmail(email, { first_name: firstName });
-    } else if (emailEnabled()) {
-      await sendReservationUnpaidEmail(email, { first_name: firstName });
+    try {
+      if (parsed.send_gst_template && emailEnabled()) {
+        const { sendGstTemplateEmail } = await import("./_lib/email.js");
+        await sendGstTemplateEmail(email, { first_name: firstName });
+      } else if (emailEnabled()) {
+        await sendReservationUnpaidEmail(email, { first_name: firstName });
+      }
+    } catch (mailErr) {
+      console.error("Lead subscribe: email send error (continuing)", mailErr);
     }
 
     return res.json({ success: true });
