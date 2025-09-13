@@ -101,4 +101,123 @@ export function buildInvoicePreviewHTML(data: InvoicePreviewData): string {
 </body></html>`;
 }
 
+// Spec-driven full invoice HTML from user's provided template with placeholders
+export function buildInvoiceHTMLFromSpec(vars: Record<string, string>): string {
+  const tpl = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Invoice — {{invoice_number}}</title>
+<style>
+  :root{--brand:#6B46C1;--muted:#6b7280;--bg:#ffffff;--panel:#f8fafc;--border:#e6e7eb;--text:#111827}
+  html,body{height:100%;margin:0;background:#f3f4f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+  .page{max-width:800px;margin:30px auto;padding:32px;background:var(--bg);box-shadow:0 8px 30px rgba(15,23,42,0.06);border-radius:10px}
+  .row{display:flex;gap:24px;align-items:flex-start}
+  .col{flex:1}
+  .right{text-align:right}
+  h1,h2,h3{margin:0;padding:0}
+  h1{font-size:20px;color:var(--brand);letter-spacing:0.2px}
+  .meta{font-size:13px;color:var(--muted)}
+  .small{font-size:12px;color:var(--muted)}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{display:inline-flex;align-items:center;gap:10px}
+  .mark{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(107,70,193,0.16)}
+  .brand-name{font-weight:700;font-size:18px}
+  .invoice-box{background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);min-width:240px}
+  .invoice-title{font-weight:700;color:#111827;margin-bottom:6px}
+  .meta-item{font-size:13px;color:var(--muted);line-height:1.5}
+  .addresses{display:flex;gap:24px;margin:22px 0 12px;flex-wrap:wrap}
+  .panel{background:#fff;border:1px solid var(--border);padding:14px;border-radius:8px;min-width:220px;box-shadow:0 6px 18px rgba(15,23,42,0.03)}
+  .panel .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .panel .value{font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-top:18px}
+  th, td{padding:12px 14px;border-bottom:1px solid #eef2f7;font-size:14px;text-align:left}
+  th{background:transparent;color:var(--muted);font-weight:600;font-size:13px}
+  td.right{text-align:right}
+  tbody tr:last-child td{border-bottom:none}
+  .summary{max-width:320px;margin-left:auto;margin-top:18px}
+  .summary-row{display:flex;justify-content:space-between;padding:8px 12px}
+  .summary-row.total{font-size:18px;color:var(--brand);font-weight:800}
+  .payment{display:flex;gap:18px;align-items:center;margin-top:22px;flex-wrap:wrap}
+  .qr{width:160px;height:160px;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+  .pay-info{flex:1}
+  .pay-cta{display:inline-block;background:var(--brand);color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
+  .muted-note{font-size:12px;color:var(--muted);margin-top:8px}
+  .footer{margin-top:28px;border-top:1px solid #f1f2f4;padding-top:16px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  @media (max-width:720px){.row{flex-direction:column}.header{flex-direction:column;align-items:flex-start;gap:12px}.invoice-box{min-width:unset;width:100%}.addresses{flex-direction:column}.summary{width:100%;margin-left:0}.qr{width:120px;height:120px}}
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="brand">
+        <div class="logo"><div class="mark">⚡</div>
+          <div><div class="brand-name">InvoiceBolt</div><div class="meta">GST-ready invoices · Instant UPI payments</div></div>
+        </div>
+      </div>
+      <div class="invoice-box right">
+        <div class="invoice-title">INVOICE</div>
+        <div class="meta-item"># {{invoice_number}}</div>
+        <div style="height:6px"></div>
+        <div class="meta-item"><strong>Date:</strong> {{invoice_date}}</div>
+        <div class="meta-item"><strong>Due:</strong> {{due_date}}</div>
+        <div style="height:6px"></div>
+        <div class="meta-item"><strong>GSTIN:</strong> {{seller_gstin}}</div>
+      </div>
+    </div>
+    <div class="addresses">
+      <div class="panel col">
+        <div class="label">BILL TO</div>
+        <div class="value">{{client_name}}</div>
+        <div class="meta">{{client_address_line1}}</div>
+        <div class="meta">{{client_address_line2}}</div>
+        <div class="meta">{{client_city}} — {{client_postcode}}</div>
+      </div>
+      <div class="panel col">
+        <div class="label">FROM</div>
+        <div class="value">{{seller_name}}</div>
+        <div class="meta">GSTIN: {{seller_gstin}}</div>
+        <div class="meta">{{seller_address_line1}}</div>
+        <div class="meta">{{seller_address_line2}}</div>
+        <div class="meta">{{seller_city}} — {{seller_postcode}}</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60%">DESCRIPTION</th>
+          <th style="width:20%">HSN/SAC</th>
+          <th style="width:10%" class="right">QTY</th>
+          <th style="width:10%" class="right">AMOUNT (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{item_description}}</td>
+          <td>{{item_hsn}}</td>
+          <td class="right">{{item_qty}}</td>
+          <td class="right">{{item_amount}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="summary">
+      <div class="summary-row"><div>Subtotal</div><div>₹ {{subtotal}}</div></div>
+      <div class="summary-row"><div>GST ({{gst_percent}}%)</div><div>₹ {{gst_amount}}</div></div>
+      <div class="summary-row total"><div>Total</div><div>₹ {{total_amount}}</div></div>
+    </div>
+    <div class="payment" style="align-items:flex-start">
+      <div class="qr"><img src="{{qr_image_data}}" alt="UPI QR" style="max-width:98%;max-height:98%;display:block;border-radius:6px"/></div>
+      <div class="pay-info">
+        <div style="font-weight:700;font-size:16px;margin-bottom:6px">Pay via UPI</div>
+        <div class="meta">UPI ID: <strong>{{upi_id}}</strong></div>
+        <div class="muted-note">Scan the QR code or tap the pay button to complete payment instantly.</div>
+        <div style="height:10px"></div>
+        <a class="pay-cta" href="{{payment_link}}">Pay ₹ {{total_amount}}</a>
+      </div>
+    </div>
+    <div class="footer"><div>GST-compliant | Auto-generated via InvoiceBolt</div><div>InvoiceBolt · Not tax advice · Consult your CA</div></div>
+  </div>
+</body></html>`;
+  return tpl.replace(/\{\{(.*?)\}\}/g, (_, k) => String(vars[k.trim()] ?? ''));
+}
+
 

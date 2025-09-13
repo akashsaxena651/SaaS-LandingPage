@@ -273,20 +273,34 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
   const transporter = createTransport();
   // Generate PDF via headless Chromium for pixel-perfect HTML→PDF. Falls back to pdf-lib if Chromium unavailable.
   async function createPdfTemplate(): Promise<Buffer> {
-    const data: InvoicePreviewData = {
-      invoiceNumber: 'INV-001',
-      businessName: 'Your Business Name',
-      businessGstin: '22AAAAA0000A1Z5',
-      clientName: 'Acme Co.',
-      clientAddressLine1: '123 Business Street',
-      clientAddressLine2: 'Mumbai, MH 400001',
-      invoiceDate: 'January 15, 2025',
-      dueDate: 'January 30, 2025',
-      itemDescription: 'Web Development Services',
-      amountInr: 'INR 999',
-      qrUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=demo@upi'
-    };
-    const html = buildInvoicePreviewHTML(data);
+    const html = buildInvoiceHTMLFromSpec({
+      invoice_number: 'INV-001',
+      invoice_date: 'Jan 15, 2025',
+      due_date: 'Jan 30, 2025',
+      seller_gstin: '22AAAAA0000A1Z5',
+      client_name: 'Acme Co.',
+      client_address_line1: '123 Business Street',
+      client_address_line2: '',
+      client_city: 'Mumbai, MH',
+      client_postcode: '400001',
+      seller_name: 'InvoiceBolt',
+      seller_address_line1: '',
+      seller_address_line2: '',
+      seller_city: '',
+      seller_postcode: '',
+      item_description: 'Web Development Services',
+      item_hsn: '998313',
+      item_qty: '1',
+      item_amount: '4,500',
+      subtotal: '4,500',
+      gst_percent: '18',
+      gst_amount: '810',
+      total_amount: '5,310',
+      qr_image_data: 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=upi://pay?pa=invoicebolt@upi&am=5310',
+      upi_id: 'invoicebolt@upi',
+      payment_link: 'upi://pay?pa=invoicebolt@upi&am=5310',
+      testimonial_text: 'Sent invoice, got paid in minutes. Love it!'
+    });
     try {
       const executablePath = await chromium.executablePath();
       const browser = await puppeteer.launch({
