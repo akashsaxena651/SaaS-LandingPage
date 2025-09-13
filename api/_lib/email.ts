@@ -100,6 +100,7 @@ export async function sendReservationPaidEmail(to: string, params: { first_name?
   ].join("");
 
   const transporter = createTransport();
+  const versionTag = new Date().toISOString().replace(/[:T\.-]/g, '').slice(0, 14);
   await transporter.sendMail({
     from: FROM_EMAIL,
     to,
@@ -450,8 +451,8 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     html: shell({ title: subject, bodyHtml }),
     text: `Hi ${tFirst}, your GST invoice template is attached (PDF + CSV). Import the CSV into Excel/Sheets and edit the PDF template or recreate it in your tool.`,
     attachments: [
-      { filename: 'GST-Line-Items.csv', content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
-      ...(pdfBuffer ? [{ filename: 'GST-Invoice-Template.pdf', content: pdfBuffer, contentType: 'application/pdf' } as const] : []),
+      { filename: `GST-Line-Items-${versionTag}.csv`, content: csvAttachment, contentType: 'text/csv; charset=utf-8' },
+      ...(pdfBuffer ? [{ filename: `GST-Invoice-Template-${versionTag}.pdf`, content: pdfBuffer, contentType: 'application/pdf' } as const] : []),
     ],
   });
 }
