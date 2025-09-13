@@ -299,8 +299,7 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
       qr_image_data: 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=upi://pay?pa=invoicebolt@upi&am=5310',
       upi_id: 'invoicebolt@upi',
       payment_link: 'upi://pay?pa=invoicebolt@upi&am=5310',
-      testimonial_text: 'Sent invoice, got paid in minutes. Love it!',
-      template_version: '2025-09-13-1'
+      testimonial_text: 'Sent invoice, got paid in minutes. Love it!'
     });
     try {
       const executablePath = await chromium.executablePath();
