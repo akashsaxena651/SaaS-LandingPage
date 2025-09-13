@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 // keep PDF rendering self-contained for serverless bundle
 
 const SMTP_HOST = process.env.SMTP_HOST;
@@ -269,34 +271,166 @@ export async function sendGstTemplateEmail(to: string, params: { first_name?: st
     <p style=\"margin:0 0 14px\"><a class=\"btn\" href=\"${CHECKOUT_URL}\" role=\"button\" aria-label=\"Automate invoices from chats\" style=\"color:#ffffff\">Automate invoices from chats</a></p>
     <p style=\"margin:0 0 8px\"><a class=\"btn\" href=\"${WHATSAPP_LINK}\" role=\"button\" aria-label=\"Chat on WhatsApp\" style=\"background:#25D366;color:#ffffff\">Chat on WhatsApp</a></p>
   `;
+  function buildInvoiceHTMLFromSpec(vars: Record<string,string>): string {
+    const tpl = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Invoice — {{invoice_number}}</title>
+<style>
+  :root{--brand:#6B46C1;--muted:#6b7280;--bg:#ffffff;--panel:#f8fafc;--border:#e6e7eb;--text:#111827}
+  html,body{height:100%;margin:0;background:#f3f4f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+  .page{max-width:800px;margin:30px auto;padding:32px;background:var(--bg);box-shadow:0 8px 30px rgba(15,23,42,0.06);border-radius:10px}
+  .row{display:flex;gap:24px;align-items:flex-start}
+  .col{flex:1}
+  .right{text-align:right}
+  h1,h2,h3{margin:0;padding:0}
+  h1{font-size:20px;color:var(--brand);letter-spacing:0.2px}
+  .meta{font-size:13px;color:var(--muted)}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{display:inline-flex;align-items:center;gap:10px}
+  .mark{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(107,70,193,0.16)}
+  .brand-name{font-weight:700;font-size:18px}
+  .invoice-box{background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);min-width:240px}
+  .invoice-title{font-weight:700;color:#111827;margin-bottom:6px}
+  .meta-item{font-size:13px;color:var(--muted);line-height:1.5}
+  .addresses{display:flex;gap:24px;margin:22px 0 12px;flex-wrap:wrap}
+  .panel{background:#fff;border:1px solid var(--border);padding:14px;border-radius:8px;min-width:220px;box-shadow:0 6px 18px rgba(15,23,42,0.03)}
+  .panel .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .panel .value{font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-top:18px}
+  th, td{padding:12px 14px;border-bottom:1px solid #eef2f7;font-size:14px;text-align:left}
+  th{background:transparent;color:var(--muted);font-weight:600;font-size:13px}
+  td.right{text-align:right}
+  .summary{max-width:320px;margin-left:auto;margin-top:18px}
+  .summary-row{display:flex;justify-content:space-between;padding:8px 12px}
+  .summary-row.total{font-size:18px;color:var(--brand);font-weight:800}
+  .payment{display:flex;gap:18px;align-items:center;margin-top:22px;flex-wrap:wrap}
+  .qr{width:160px;height:160px;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+  .pay-info{flex:1}
+  .pay-cta{display:inline-block;background:var(--brand);color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
+  .muted-note{font-size:12px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="brand">
+        <div class="logo"><div class="mark">⚡</div><div><div class="brand-name">InvoiceBolt</div><div class="meta">GST-ready invoices · Instant UPI payments</div></div></div>
+      </div>
+      <div class="invoice-box right">
+        <div class="invoice-title">INVOICE</div>
+        <div class="meta-item"># {{invoice_number}}</div>
+        <div style="height:6px"></div>
+        <div class="meta-item"><strong>Date:</strong> {{invoice_date}}</div>
+        <div class="meta-item"><strong>Due:</strong> {{due_date}}</div>
+        <div style="height:6px"></div>
+        <div class="meta-item"><strong>GSTIN:</strong> {{seller_gstin}}</div>
+      </div>
+    </div>
+    <div class="addresses">
+      <div class="panel col">
+        <div class="label">BILL TO</div>
+        <div class="value">{{client_name}}</div>
+        <div class="meta">{{client_address_line1}}</div>
+        <div class="meta">{{client_address_line2}}</div>
+        <div class="meta">{{client_city}} — {{client_postcode}}</div>
+      </div>
+      <div class="panel col">
+        <div class="label">FROM</div>
+        <div class="value">{{seller_name}}</div>
+        <div class="meta">GSTIN: {{seller_gstin}}</div>
+        <div class="meta">{{seller_address_line1}}</div>
+        <div class="meta">{{seller_address_line2}}</div>
+        <div class="meta">{{seller_city}} — {{seller_postcode}}</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60%">DESCRIPTION</th>
+          <th style="width:20%">HSN/SAC</th>
+          <th style="width:10%" class="right">QTY</th>
+          <th style="width:10%" class="right">AMOUNT (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{item_description}}</td>
+          <td>{{item_hsn}}</td>
+          <td class="right">{{item_qty}}</td>
+          <td class="right">{{item_amount}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="summary">
+      <div class="summary-row"><div>Subtotal</div><div>₹ {{subtotal}}</div></div>
+      <div class="summary-row"><div>GST ({{gst_percent}}%)</div><div>₹ {{gst_amount}}</div></div>
+      <div class="summary-row total"><div>Total</div><div>₹ {{total_amount}}</div></div>
+    </div>
+    <div class="payment" style="align-items:flex-start">
+      <div class="qr"><img src="{{qr_image_data}}" alt="UPI QR" style="max-width:98%;max-height:98%;display:block;border-radius:6px"/></div>
+      <div class="pay-info">
+        <div style="font-weight:700;font-size:16px;margin-bottom:6px">Pay via UPI</div>
+        <div class="meta">UPI ID: <strong>{{upi_id}}</strong></div>
+        <div class="muted-note">Scan the QR code or tap the pay button to complete payment instantly.</div>
+        <div style="height:10px"></div>
+        <a class="pay-cta" href="{{payment_link}}">Pay ₹ {{total_amount}}</a>
+      </div>
+    </div>
+  </div>
+</body></html>`;
+    return tpl.replace(/\{\{(.*?)\}\}/g, (_, k) => String(vars[k.trim()] ?? ''));
+  }
+
   async function createPdfTemplate(): Promise<Buffer> {
-    // data values inlined to avoid cross-bundle imports
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([612, 792]);
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const purple = rgb(0.31, 0.27, 0.90);
-    page.drawText('Invoice Preview', { x: 50, y: 760, size: 14, font: fontBold });
-    page.drawText('INVOICE', { x: 90, y: 690, size: 14, font: fontBold, color: purple });
-    page.drawText('#INV-001', { x: 90, y: 675, size: 10, font });
-    page.drawText('Your Business Name', { x: 420, y: 690, size: 11, font: fontBold });
-    page.drawText('GST: 22AAAAA0000A1Z5', { x: 420, y: 675, size: 9, font });
-    page.drawText('Bill To:', { x: 90, y: 645, size: 10, font: fontBold });
-    page.drawText('Acme Co.', { x: 90, y: 632, size: 10, font });
-    page.drawText('123 Business Street', { x: 90, y: 619, size: 9, font });
-    page.drawText('Mumbai, MH 400001', { x: 90, y: 606, size: 9, font });
-    page.drawText('Invoice Date:', { x: 420, y: 645, size: 10, font: fontBold });
-    page.drawText('January 15, 2025', { x: 420, y: 632, size: 10, font });
-    page.drawText('Due Date:', { x: 420, y: 614, size: 10, font: fontBold });
-    page.drawText('January 30, 2025', { x: 420, y: 601, size: 10, font });
-    page.drawText('Description', { x: 90, y: 570, size: 10, font: fontBold });
-    page.drawText('Amount', { x: 520, y: 570, size: 10, font: fontBold });
-    page.drawText('Web Development Services', { x: 90, y: 550, size: 10, font });
-    page.drawText('INR 999', { x: 520, y: 550, size: 10, font });
-    page.drawText('INR 999', { x: 520, y: 500, size: 16, font: fontBold, color: purple });
-    page.drawText('Total Amount', { x: 520, y: 485, size: 9, font });
-    const pdfBytes = await pdfDoc.save();
-    return Buffer.from(pdfBytes);
+    const html = buildInvoiceHTMLFromSpec({
+      invoice_number: 'INV-001',
+      invoice_date: 'Jan 15, 2025',
+      due_date: 'Jan 30, 2025',
+      seller_gstin: '22AAAAA0000A1Z5',
+      client_name: 'Acme Co.',
+      client_address_line1: '123 Business Street',
+      client_address_line2: '',
+      client_city: 'Mumbai, MH',
+      client_postcode: '400001',
+      seller_name: 'InvoiceBolt',
+      seller_address_line1: '',
+      seller_address_line2: '',
+      seller_city: '',
+      seller_postcode: '',
+      item_description: 'Web Development Services',
+      item_hsn: '998313',
+      item_qty: '1',
+      item_amount: '4,500',
+      subtotal: '4,500',
+      gst_percent: '18',
+      gst_amount: '810',
+      total_amount: '5,310',
+      qr_image_data: 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=upi://pay?pa=invoicebolt@upi&am=5310',
+      upi_id: 'invoicebolt@upi',
+      payment_link: 'upi://pay?pa=invoicebolt@upi&am=5310'
+    });
+    try {
+      const executablePath = await chromium.executablePath();
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: executablePath || undefined,
+        headless: chromium.headless,
+      });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+      const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' } });
+      await browser.close();
+      return Buffer.from(pdfBuffer);
+    } catch (e) {
+      const pdfDoc = await PDFDocument.create();
+      const p = pdfDoc.addPage([612,792]);
+      const fB = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      p.drawText('INVOICE', { x: 60, y: 720, size: 16, font: fB });
+      const bytes = await pdfDoc.save();
+      return Buffer.from(bytes);
+    }
   }
 
   let pdfBuffer: Buffer | undefined;
