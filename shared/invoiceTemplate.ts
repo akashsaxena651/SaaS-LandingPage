@@ -214,7 +214,7 @@ export function buildInvoiceHTMLFromSpec(vars: Record<string, string>): string {
         <a class="pay-cta" href="{{payment_link}}">Pay ₹ {{total_amount}}</a>
       </div>
     </div>
-    <div class="footer"><div>GST-compliant | Auto-generated via InvoiceBolt</div><div>InvoiceBolt · Not tax advice · Consult your CA</div></div>
+    <div class="footer"><div>GST-compliant | Auto-generated via InvoiceBolt • v{{template_version}}</div><div>InvoiceBolt · Not tax advice · Consult your CA</div></div>
   </div>
 </body></html>`;
   return tpl.replace(/\{\{(.*?)\}\}/g, (_, k) => String(vars[k.trim()] ?? ''));
