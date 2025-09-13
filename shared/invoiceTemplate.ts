@@ -20,7 +20,7 @@ export function buildInvoicePreviewHTML(data: InvoicePreviewData): string {
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Invoice Preview</title>
 <style>
-  :root{--brand:#6B46C1;--brand2:#7C3AED;--muted:#6b7280;--bg:#ffffff;--panel:#f8fafc;--border:#e6e7eb;--text:#111827}
+  :root{--brand:#6B46C1;--muted:#6b7280;--bg:#ffffff;--panel:#f8fafc;--border:#e6e7eb;--text:#111827}
   body{margin:0;background:#f3f4f6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--text)}
   .wrap{padding:48px}
   .header{background:#eef2ff;padding:10px 16px;border-bottom:1px solid #e5e7eb;color:#0f172a;font-weight:700}
@@ -117,12 +117,12 @@ export function buildInvoiceHTMLFromSpec(vars: Record<string, string>): string {
   h1{font-size:20px;color:var(--brand);letter-spacing:0.2px}
   .meta{font-size:13px;color:var(--muted)}
   .small{font-size:12px;color:var(--muted)}
-  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
   .brand{display:flex;align-items:center;gap:12px}
-  .logo{display:flex;align-items:center;gap:12px}
-  .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand2),var(--brand));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;box-shadow:0 6px 22px rgba(107,70,193,0.18)}
-  .brand-name{font-weight:800;font-size:20px;letter-spacing:0.2px}
-  .invoice-box{background:var(--panel);padding:14px 16px;border-radius:10px;border:1px solid var(--border);min-width:260px;box-shadow:0 4px 14px rgba(15,23,42,0.05)}
+  .logo{display:inline-flex;align-items:center;gap:10px}
+  .mark{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;box-shadow:0 6px 18px rgba(107,70,193,0.16)}
+  .brand-name{font-weight:700;font-size:18px}
+  .invoice-box{background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);min-width:240px}
   .invoice-title{font-weight:700;color:#111827;margin-bottom:6px}
   .meta-item{font-size:13px;color:var(--muted);line-height:1.5}
   .addresses{display:flex;gap:24px;margin:22px 0 12px;flex-wrap:wrap}
@@ -130,17 +130,17 @@ export function buildInvoiceHTMLFromSpec(vars: Record<string, string>): string {
   .panel .label{font-size:12px;color:var(--muted);margin-bottom:6px}
   .panel .value{font-weight:600}
   table{width:100%;border-collapse:collapse;margin-top:18px}
-  th, td{padding:12px 14px;border-bottom:1px solid #eef2f7;font-size:14px;text-align:left;vertical-align:middle}
+  th, td{padding:12px 14px;border-bottom:1px solid #eef2f7;font-size:14px;text-align:left}
   th{background:transparent;color:var(--muted);font-weight:600;font-size:13px}
   td.right{text-align:right}
   tbody tr:last-child td{border-bottom:none}
-  .summary{max-width:340px;margin-left:auto;margin-top:18px}
+  .summary{max-width:320px;margin-left:auto;margin-top:18px}
   .summary-row{display:flex;justify-content:space-between;padding:8px 12px}
-  .summary-row.total{font-size:20px;color:var(--brand);font-weight:800}
+  .summary-row.total{font-size:18px;color:var(--brand);font-weight:800}
   .payment{display:flex;gap:18px;align-items:center;margin-top:22px;flex-wrap:wrap}
-  .qr{width:160px;height:160px;border-radius:12px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(15,23,42,0.06)}
+  .qr{width:160px;height:160px;border-radius:8px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
   .pay-info{flex:1}
-  .pay-cta{display:inline-block;background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:800;box-shadow:0 8px 20px rgba(107,70,193,0.16)}
+  .pay-cta{display:inline-block;background:var(--brand);color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}
   .muted-note{font-size:12px;color:var(--muted);margin-top:8px}
   .footer{margin-top:28px;border-top:1px solid #f1f2f4;padding-top:16px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   @media (max-width:720px){.row{flex-direction:column}.header{flex-direction:column;align-items:flex-start;gap:12px}.invoice-box{min-width:unset;width:100%}.addresses{flex-direction:column}.summary{width:100%;margin-left:0}.qr{width:120px;height:120px}}
