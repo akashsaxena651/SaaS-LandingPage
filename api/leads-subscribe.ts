@@ -7,7 +7,6 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ success: false, error: "Method not allowed" });
   }
   try {
-    console.log("[leads-subscribe] incoming", { hasBody: !!req.body, send_gst_template: req.body?.send_gst_template });
     if (typeof req.body?.website === "string" && req.body.website.trim() !== "") {
       return res.json({ success: true });
     }
@@ -22,21 +21,18 @@ export default async function handler(req: any, res: any) {
       await storage.createLead({ email, utms });
     }
 
-    let emailed = false;
     try {
       if (parsed.send_gst_template && emailEnabled()) {
         const { sendGstTemplateEmail } = await import("./_lib/email.js");
         await sendGstTemplateEmail(email, { first_name: firstName });
-        emailed = true;
       } else if (emailEnabled()) {
         await sendReservationUnpaidEmail(email, { first_name: firstName });
-        emailed = true;
       }
     } catch (mailErr) {
       console.error("Lead subscribe: email send error (continuing)", mailErr);
     }
 
-    return res.json({ success: true, emailed, smtpConfigured: emailEnabled() });
+    return res.json({ success: true });
   } catch (err: any) {
     try {
       console.error("Lead subscribe error:", err);
